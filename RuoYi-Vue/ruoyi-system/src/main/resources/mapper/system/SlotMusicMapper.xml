@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.system.mapper.SlotMusicMapper">
+    
+    <resultMap type="SlotMusic" id="SlotMusicResult">
+        <result property="id"    column="id"    />
+        <result property="slotId"    column="slot_id"    />
+        <result property="musicId"    column="music_id"    />
+        <result property="playOrder"    column="play_order"    />
+    </resultMap>
+
+    <sql id="selectSlotMusicVo">
+        select id, slot_id, music_id, play_order from slot_music
+    </sql>
+
+    <select id="selectSlotMusicList" parameterType="SlotMusic" resultMap="SlotMusicResult">
+        <include refid="selectSlotMusicVo"/>
+        <where>  
+            <if test="slotId != null "> and slot_id = #{slotId}</if>
+            <if test="musicId != null "> and music_id = #{musicId}</if>
+            <if test="playOrder != null "> and play_order = #{playOrder}</if>
+        </where>
+    </select>
+    
+    <select id="selectSlotMusicById" parameterType="Long" resultMap="SlotMusicResult">
+        <include refid="selectSlotMusicVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertSlotMusic" parameterType="SlotMusic" useGeneratedKeys="true" keyProperty="id">
+        insert into slot_music
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="slotId != null">slot_id,</if>
+            <if test="musicId != null">music_id,</if>
+            <if test="playOrder != null">play_order,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="slotId != null">#{slotId},</if>
+            <if test="musicId != null">#{musicId},</if>
+            <if test="playOrder != null">#{playOrder},</if>
+         </trim>
+    </insert>
+
+    <update id="updateSlotMusic" parameterType="SlotMusic">
+        update slot_music
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="slotId != null">slot_id = #{slotId},</if>
+            <if test="musicId != null">music_id = #{musicId},</if>
+            <if test="playOrder != null">play_order = #{playOrder},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteSlotMusicById" parameterType="Long">
+        delete from slot_music where id = #{id}
+    </delete>
+
+    <delete id="deleteSlotMusicByIds" parameterType="String">
+        delete from slot_music where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+</mapper>
