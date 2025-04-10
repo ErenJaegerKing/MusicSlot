@@ -2,6 +2,8 @@ package com.ruoyi.system.service;
 
 import java.util.List;
 import com.ruoyi.system.domain.Music;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 音乐Service接口
@@ -18,7 +20,7 @@ public interface IMusicService
      * @return 音乐
      */
     public Music selectMusicByMusicId(Long musicId);
-
+    
     /**
      * 查询音乐列表
      * 
@@ -28,12 +30,21 @@ public interface IMusicService
     public List<Music> selectMusicList(Music music);
 
     /**
+     * 批量查询音乐
+     *
+     * @param musicIds 音乐Ids
+     * @return 音乐集合
+     */
+    public List<Music> selectMusicByIds(Long[] musicIds);
+
+
+    /**
      * 新增音乐
      * 
      * @param music 音乐
      * @return 结果
      */
-    public int insertMusic(Music music);
+    public int insertMusic(MultipartFile file,String title,String artist,String album);
 
     /**
      * 修改音乐

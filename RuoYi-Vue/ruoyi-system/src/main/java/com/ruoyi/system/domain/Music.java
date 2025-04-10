@@ -34,10 +34,22 @@ public class Music extends BaseEntity
     @Excel(name = "文件路径")
     private String filePath;
 
+    /** Minio路径 */
+    @Excel(name = "Minio路径")
+    private String fileUrl;
+
     /** 状态（0正常 1停用） */
     @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
     private String status;
 
+    public String getFileUrl() {
+        return fileUrl;
+    }
+
+    public void setFileUrl(String fileUrl) {
+        this.fileUrl = fileUrl;
+    }
+    
     public void setMusicId(Long musicId) 
     {
         this.musicId = musicId;

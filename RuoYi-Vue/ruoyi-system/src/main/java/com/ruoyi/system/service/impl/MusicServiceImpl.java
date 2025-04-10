@@ -1,12 +1,17 @@
 package com.ruoyi.system.service.impl;
 
-import java.util.List;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.common.utils.file.FileUploadUtils;
+import com.ruoyi.common.utils.file.FileUtils;
+import com.ruoyi.system.domain.Music;
+import com.ruoyi.system.mapper.MusicMapper;
+import com.ruoyi.system.service.IMusicService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.system.mapper.MusicMapper;
-import com.ruoyi.system.domain.Music;
-import com.ruoyi.system.service.IMusicService;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.util.List;
 
 /**
  * 音乐Service业务层处理
@@ -19,7 +24,7 @@ public class MusicServiceImpl implements IMusicService
 {
     @Autowired
     private MusicMapper musicMapper;
-
+    
     /**
      * 查询音乐
      * 
@@ -43,6 +48,17 @@ public class MusicServiceImpl implements IMusicService
     {
         return musicMapper.selectMusicList(music);
     }
+    
+    /**
+     * 批量查询音乐
+     *
+     * @param musicIds 音乐Ids
+     * @return 音乐集合
+     */
+    @Override
+    public List<Music> selectMusicByIds(Long[] musicIds) {
+        return musicMapper.selectMusicByIds(musicIds);
+    }
 
     /**
      * 新增音乐
@@ -51,8 +67,19 @@ public class MusicServiceImpl implements IMusicService
      * @return 结果
      */
     @Override
-    public int insertMusic(Music music)
+    public int insertMusic(MultipartFile file,String title,String artist, String album)
     {
+        String filePath = null;
+        try {
+            filePath = FileUploadUtils.uploadMinio(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        Music music = new Music();
+        music.setTitle(title);
+        music.setArtist(artist);
+        music.setFilePath(filePath);
+        music.setFileUrl(FileUtils.getName(filePath));
         music.setCreateTime(DateUtils.getNowDate());
         return musicMapper.insertMusic(music);
     }

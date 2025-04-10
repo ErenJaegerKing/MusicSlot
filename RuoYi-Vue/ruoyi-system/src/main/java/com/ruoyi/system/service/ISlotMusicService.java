@@ -36,6 +36,14 @@ public interface ISlotMusicService
     public int insertSlotMusic(SlotMusic slotMusic);
 
     /**
+     * 批量新增时间段音乐关联
+     *
+     * @param slotMusic 时间段音乐关联
+     * @return 结果
+     */
+    public int batchInsertSlotMusic(List<SlotMusic> slotMusics);
+    
+    /**
      * 修改时间段音乐关联
      * 
      * @param slotMusic 时间段音乐关联

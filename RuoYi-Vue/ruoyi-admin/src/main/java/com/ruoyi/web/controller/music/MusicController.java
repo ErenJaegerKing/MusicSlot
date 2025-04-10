@@ -4,14 +4,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -20,6 +13,7 @@ import com.ruoyi.system.domain.Music;
 import com.ruoyi.system.service.IMusicService;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.common.core.page.TableDataInfo;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 音乐Controller
@@ -75,9 +69,13 @@ public class MusicController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:music:add')")
     @Log(title = "音乐", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(@RequestBody Music music)
+    public AjaxResult add(
+            @RequestParam("file")MultipartFile file,
+            @RequestParam("title")String title,
+            @RequestParam(value = "artist",required = false) String artist,
+            @RequestParam(value = "album",required = false) String album)
     {
-        return toAjax(musicService.insertMusic(music));
+        return toAjax(musicService.insertMusic(file,title,artist,album));
     }
 
     /**

@@ -15,6 +15,13 @@ public class SlotMusic extends BaseEntity
 {
     private static final long serialVersionUID = 1L;
 
+    public SlotMusic(Long id, Long slotId, Long musicId, Integer playOrder) {
+        this.id = id;
+        this.slotId = slotId;
+        this.musicId = musicId;
+        this.playOrder = playOrder;
+    }
+
     /** 主键ID */
     private Long id;
 
@@ -28,7 +35,7 @@ public class SlotMusic extends BaseEntity
 
     /** 播放顺序 */
     @Excel(name = "播放顺序")
-    private Long playOrder;
+    private Integer playOrder;
 
     public void setId(Long id) 
     {
@@ -60,12 +67,12 @@ public class SlotMusic extends BaseEntity
         return musicId;
     }
 
-    public void setPlayOrder(Long playOrder) 
+    public void setPlayOrder(Integer playOrder) 
     {
         this.playOrder = playOrder;
     }
 
-    public Long getPlayOrder() 
+    public Integer getPlayOrder() 
     {
         return playOrder;
     }

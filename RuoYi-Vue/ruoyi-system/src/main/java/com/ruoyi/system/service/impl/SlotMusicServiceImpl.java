@@ -52,7 +52,18 @@ public class SlotMusicServiceImpl implements ISlotMusicService {
     public int insertSlotMusic(SlotMusic slotMusic) {
         return slotMusicMapper.insertSlotMusic(slotMusic);
     }
-
+    
+    /**
+     * 批量新增时间段音乐关联
+     *
+     * @param slotMusic 时间段音乐关联
+     * @return 结果
+     */
+    @Override
+    public int batchInsertSlotMusic(List<SlotMusic> slotMusics) {
+        return slotMusicMapper.batchInsertSlotMusic(slotMusics);
+    }
+    
     /**
      * 修改时间段音乐关联
      *

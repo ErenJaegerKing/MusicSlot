@@ -28,6 +28,13 @@ public interface ITimeSlotService
     public List<TimeSlot> selectTimeSlotList(TimeSlot timeSlot);
 
     /**
+     * 查询所有时间段
+     *
+     * @return 时间段
+     */
+    public List<TimeSlot> selectAllTimeSlot();
+    
+    /**
      * 新增时间段
      * 
      * @param timeSlot 时间段

@@ -43,6 +43,23 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
          </trim>
     </insert>
 
+    <insert id="batchInsertSlotMusic" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+        insert into slot_music
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="list[0].slotId != null">slot_id,</if>
+            <if test="list[0].musicId != null">music_id,</if>
+            <if test="list[0].playOrder != null">play_order,</if>
+        </trim>
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            <trim prefix="(" suffix=")" suffixOverrides=",">
+                <if test="item.slotId != null">#{item.slotId},</if>
+                <if test="item.musicId != null">#{item.musicId},</if>
+                <if test="item.playOrder != null">#{item.playOrder},</if>
+            </trim>
+        </foreach>
+    </insert>
+    
     <update id="updateSlotMusic" parameterType="SlotMusic">
         update slot_music
         <trim prefix="SET" suffixOverrides=",">

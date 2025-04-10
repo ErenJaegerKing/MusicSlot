@@ -28,6 +28,14 @@ public interface MusicMapper
     public List<Music> selectMusicList(Music music);
 
     /**
+     * 批量查询音乐
+     *
+     * @param musicIds 音乐Ids
+     * @return 音乐集合
+     */
+    public List<Music> selectMusicByIds(Long[] musicIds);
+    
+    /**
      * 新增音乐
      * 
      * @param music 音乐
