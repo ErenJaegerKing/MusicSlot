@@ -51,18 +51,18 @@
         >新增曲目
         </el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['system:music:edit']"
-        >修改曲目
-        </el-button>
-      </el-col>
+      <!--      <el-col :span="1.5">-->
+      <!--        <el-button-->
+      <!--          type="success"-->
+      <!--          plain-->
+      <!--          icon="el-icon-edit"-->
+      <!--          size="mini"-->
+      <!--          :disabled="single"-->
+      <!--          @click="handleUpdate"-->
+      <!--          v-hasPermi="['system:music:edit']"-->
+      <!--        >修改曲目-->
+      <!--        </el-button>-->
+      <!--      </el-col>-->
       <el-col :span="1.5">
         <el-button
           type="danger"
@@ -101,7 +101,7 @@
         <template #default="scope">
           <!-- 自定义内容：注入音乐播放器 -->
           <div>
-            <audio controls :src="scope.row.filePath" style="width: 100%; max-width: 200px;">
+            <audio controls :src="modifiedPath(scope.row.filePath)" style="width: 100%; max-width: 200px;">
               您的浏览器不支持音频播放。
             </audio>
           </div>
@@ -109,14 +109,14 @@
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <el-button
-            size="mini"
-            type="text"
-            icon="el-icon-edit"
-            @click="handleUpdate(scope.row)"
-            v-hasPermi="['system:music:edit']"
-          >修改
-          </el-button>
+          <!--          <el-button-->
+          <!--            size="mini"-->
+          <!--            type="text"-->
+          <!--            icon="el-icon-edit"-->
+          <!--            @click="handleUpdate(scope.row)"-->
+          <!--            v-hasPermi="['system:music:edit']"-->
+          <!--          >修改-->
+          <!--          </el-button>-->
           <el-button
             size="mini"
             type="text"
@@ -141,18 +141,31 @@
     <el-dialog :title="title" :visible.sync="open" width="500px" append-to-body>
       <el-upload
         class="upload-demo"
+        ref="upload"
         drag
         action="#"
         :auto-upload="false"
-        :on-change="handleFileChange"
         :file-list="fileList"
         accept=".mp3,.wav,.ogg,.flac,.aac"
-        :limit="1"
-        :on-exceed="handleExceed">
+        show-file-list
+        multiple
+        :on-change="onChange"
+        :on-remove="handleRemove"
+        :on-exceed="handleExceed"
+
+      >
         <i class="el-icon-upload"></i>
         <div class="el-upload__text">将音乐文件拖到此处，或<em>点击上传</em></div>
-        <div class="el-upload__tip" slot="tip">支持MP3、WAV、OGG、FLAC、AAC格式，大小不超过50MB</div>
       </el-upload>
+      <div v-show="progressFlag">
+        <el-progress
+          :percentage="progressPercent"
+          status="success"
+          width="100px"
+          :stroke-width="14"
+          style="margin-top: 20px;"
+        ></el-progress>
+      </div>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
@@ -163,6 +176,7 @@
 
 <script>
 import {listMusic, getMusic, delMusic, addMusic, updateMusic} from "@/api/music/music";
+import axios from "axios";
 
 export default {
   name: "Music",
@@ -208,21 +222,14 @@ export default {
         // ],
       },
       fileList: [],
+      progressFlag: false,
+      progressPercent: 0
     };
   },
   created() {
     this.getList();
   },
   methods: {
-    /** 查询音乐列表 */
-    getList() {
-      this.loading = true;
-      listMusic(this.queryParams).then(response => {
-        this.musicList = response.rows;
-        this.total = response.total;
-        this.loading = false;
-      });
-    },
     // 取消按钮
     cancel() {
       this.open = false;
@@ -243,11 +250,11 @@ export default {
         updateBy: null,
         updateTime: null,
         remark: null,
-        file: null,
-        album: '',
       };
       this.resetForm("form");
       this.fileList = [];
+      this.progressFlag = false;
+      this.progressPercent = 0
     },
     /** 搜索按钮操作 */
     handleQuery() {
@@ -281,66 +288,60 @@ export default {
         this.title = "修改音乐";
       });
     },
-    parseMusicFilename(filename) {
-      // 移除文件扩展名
-      const nameWithoutExt = filename.replace(/\.[^/.]+$/, "");
-
-      // 使用"-"分割字符串
-      const parts = nameWithoutExt.split("-");
-
-      // 如果分割后有两部分，则第一部分是歌曲名，第二部分是作者
-      if (parts.length === 2) {
-        return {
-          title: parts[0].trim(),
-          artist: parts[1].trim()
-        };
-      }
-
-      // 如果不符合格式，返回默认值或原始文件名
-      return {
-        title: nameWithoutExt,
-        artist: ""
-      };
-    },
-    // 对变更数据进行保存
-    handleFileChange(file, fileList) {
-      if (fileList.length > 1) {
-        fileList.splice(0, 1);
-      }
-      this.form.file = file.raw;
-    },
-    // 校验上传文件数量
-    handleExceed(files, fileList) {
-      this.$message.warning(`只能上传一个文件，请先删除当前文件`);
-    },
     /** 提交按钮 */
     submitForm() {
-      if (!this.form.file) {
-        this.$message.error('请选择音乐文件');
+      if (!this.fileList || this.fileList.length === 0) {
+        this.$message.warning('请选择要上传的文件');
         return;
       }
-      const musicInfo = this.parseMusicFilename(this.form.file.name)
       // 创建FormData对象
-      const formData = new FormData();
-      formData.append('file', this.form.file);
-      if (this.form.musicId != null) {
-        this.form.title = musicInfo.title;
-        this.form.artist = musicInfo.artist;
-        formData.append('music', this.form)
-        updateMusic(this.form).then(response => {
-          this.$modal.msgSuccess(" 修改成功");
-          this.open = false;
-          this.getList();
-        })
-      } else {
-        formData.append('title', musicInfo.title);
-        formData.append('artist', musicInfo.artist);
-        addMusic(formData).then(response => {
-          this.$modal.msgSuccess("添加成功");
-          this.open = false;
-          this.getList();
-        })
-      }
+      let formData = new FormData();
+      this.fileList.forEach(file => {
+        formData.append("files", file.raw);
+        formData.append("filesName", file.name);
+      });
+
+      // 进度条开始
+      this.progressFlag = true;
+      axios({
+        url: '/music',
+        method: 'post',
+        data: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        onUploadProgress: progressEvent => {
+          this.progressPercent = ((progressEvent.loaded / progressEvent.total) * 100) | 0;
+        }
+      }).then(response => {
+        this.$modal.msgSuccess("添加成功");
+        this.open = false;
+        this.getList();
+      })
+    },
+    //文件状态改变时的钩子，添加文件、上传成功和上传失败时都会被调用
+    onChange(file, fileList) {
+      this.fileList = fileList;
+    },
+    handleRemove(file, fileList) {
+      this.fileList = fileList;
+    },
+    handleExceed(files, fileList) {
+    },
+    // 文件相对路径
+    modifiedPath(originalPath) {
+      const baseUrl = window.location.protocol + "//" + window.location.hostname;
+      const urlObj = new URL(originalPath);
+      return baseUrl + `:${urlObj.port}${urlObj.pathname}`
+    },
+    /** 查询音乐列表 */
+    getList() {
+      this.loading = true;
+      listMusic(this.queryParams).then(response => {
+        this.musicList = response.rows;
+        this.total = response.total;
+        this.loading = false;
+      });
     },
     /** 删除按钮操作 */
     handleDelete(row) {

@@ -3,7 +3,6 @@ package com.ruoyi.web.controller.music;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ruoyi.system.domain.vo.MusicVo;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -19,14 +18,13 @@ import org.springframework.web.multipart.MultipartFile;
 
 /**
  * 音乐Controller
- * 
+ *
  * @author ruoyi
  * @date 2025-04-08
  */
 @RestController
 @RequestMapping("/music")
-public class MusicController extends BaseController
-{
+public class MusicController extends BaseController {
     @Autowired
     private IMusicService musicService;
 
@@ -35,8 +33,7 @@ public class MusicController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:music:list')")
     @GetMapping("/list")
-    public TableDataInfo list(Music music)
-    {
+    public TableDataInfo list(Music music) {
         startPage();
         List<Music> list = musicService.selectMusicList(music);
         return getDataTable(list);
@@ -48,8 +45,7 @@ public class MusicController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:music:export')")
     @Log(title = "音乐", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
-    public void export(HttpServletResponse response, Music music)
-    {
+    public void export(HttpServletResponse response, Music music) {
         List<Music> list = musicService.selectMusicList(music);
         ExcelUtil<Music> util = new ExcelUtil<Music>(Music.class);
         util.exportExcel(response, list, "音乐数据");
@@ -60,8 +56,7 @@ public class MusicController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:music:query')")
     @GetMapping(value = "/{musicId}")
-    public AjaxResult getInfo(@PathVariable("musicId") Long musicId)
-    {
+    public AjaxResult getInfo(@PathVariable("musicId") Long musicId) {
         return success(musicService.selectMusicByMusicId(musicId));
     }
 
@@ -72,12 +67,8 @@ public class MusicController extends BaseController
     @Log(title = "音乐", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(
-            @RequestParam("file")MultipartFile file,
-            @RequestParam("title")String title,
-            @RequestParam(value = "artist",required = false) String artist,
-            @RequestParam(value = "album",required = false) String album)
-    {
-        return toAjax(musicService.insertMusic(file,title,artist,album));
+            @RequestParam("file") MultipartFile[] file) {
+        return toAjax(musicService.insertMusic(file));
     }
 
     /**
@@ -86,9 +77,8 @@ public class MusicController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:music:edit')")
     @Log(title = "音乐", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(MultipartFile file,Music music)
-    {
-        return toAjax(musicService.updateMusic(file,music));
+    public AjaxResult edit(MultipartFile file, Music music) {
+        return toAjax(musicService.updateMusic(file, music));
     }
 
     /**
@@ -96,9 +86,8 @@ public class MusicController extends BaseController
      */
     @PreAuthorize("@ss.hasPermi('system:music:remove')")
     @Log(title = "音乐", businessType = BusinessType.DELETE)
-	@DeleteMapping("/{musicIds}")
-    public AjaxResult remove(@PathVariable Long[] musicIds)
-    {
+    @DeleteMapping("/{musicIds}")
+    public AjaxResult remove(@PathVariable Long[] musicIds) {
         return toAjax(musicService.deleteMusicByMusicIds(musicIds));
     }
 }

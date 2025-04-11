@@ -43,18 +43,18 @@
         >新增任务
         </el-button>
       </el-col>
-      <el-col :span="1.5">
-        <el-button
-          type="success"
-          plain
-          icon="el-icon-edit"
-          size="mini"
-          :disabled="single"
-          @click="handleUpdate"
-          v-hasPermi="['system:slot:edit']"
-        >修改任务
-        </el-button>
-      </el-col>
+<!--      <el-col :span="1.5">-->
+<!--        <el-button-->
+<!--          type="success"-->
+<!--          plain-->
+<!--          icon="el-icon-edit"-->
+<!--          size="mini"-->
+<!--          :disabled="single"-->
+<!--          @click="handleUpdate"-->
+<!--          v-hasPermi="['system:slot:edit']"-->
+<!--        >修改任务-->
+<!--        </el-button>-->
+<!--      </el-col>-->
       <el-col :span="1.5">
         <el-button
           type="danger"
@@ -178,6 +178,7 @@
                 v-model="form.startTime"
                 placeholder="请选择开始时间"
                 value-format="HH:mm:ss"
+                style="width: 100%"
               >
               </el-time-picker>
             </el-form-item>
@@ -189,6 +190,7 @@
                 v-model="form.endTime"
                 placeholder="请选择结束时间"
                 value-format="HH:mm:ss"
+                style="width: 100%"
               >
               </el-time-picker>
             </el-form-item>

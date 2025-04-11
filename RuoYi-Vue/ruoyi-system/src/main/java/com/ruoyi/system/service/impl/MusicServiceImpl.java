@@ -4,7 +4,6 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
 import com.ruoyi.common.utils.file.FileUtils;
 import com.ruoyi.system.domain.Music;
-import com.ruoyi.system.domain.vo.MusicVo;
 import com.ruoyi.system.mapper.MusicMapper;
 import com.ruoyi.system.service.IMusicService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,7 +67,7 @@ public class MusicServiceImpl implements IMusicService
      * @return 结果
      */
     @Override
-    public int insertMusic(MultipartFile file,String title,String artist, String album)
+    public int insertMusic(MultipartFile[] file)
     {
         String filePath = null;
         try {
@@ -77,8 +76,6 @@ public class MusicServiceImpl implements IMusicService
             throw new RuntimeException(e);
         }
         Music music = new Music();
-        music.setTitle(title);
-        music.setArtist(artist);
         music.setFilePath(filePath);
         music.setFileUrl(FileUtils.getName(filePath));
         music.setCreateTime(DateUtils.getNowDate());
