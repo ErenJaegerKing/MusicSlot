@@ -2,6 +2,7 @@ package com.ruoyi.system.mapper;
 
 import java.util.List;
 import com.ruoyi.system.domain.Music;
+import com.ruoyi.system.domain.vo.MusicVo;
 
 /**
  * 音乐Mapper接口

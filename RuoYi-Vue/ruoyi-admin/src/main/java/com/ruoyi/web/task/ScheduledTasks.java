@@ -16,7 +16,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Component
@@ -25,6 +25,12 @@ public class ScheduledTasks {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
 
+    // 正在播放的时间段
+    private final Map<Long, Boolean> playingSlots = new ConcurrentHashMap<>();
+
+    // 不循环 歌单播放完毕，但是时间段未结束的 可以在每天凌晨0电的时候，清空这个集合
+    private final Map<Long, Boolean> notLoopSlots = new ConcurrentHashMap<>();
+
     @Autowired
     private ITimeSlotService iTimeSlotService;
 
@@ -32,12 +38,21 @@ public class ScheduledTasks {
     private IMusicService iMusicService;
 
     @Scheduled(cron = "0/30 * * * * ? ")
-    public void reportCurrentTimeWithCronExpression() {
-        log.info("新定时任务");
+    public void TimeSlotPlayScheduler() {
+        log.info("新定时任务 - 时间：{}", dateFormat.format(new Date()));
         List<TimeSlot> timeSlots = iTimeSlotService.selectAllTimeSlot();
+
         // 遍历时间段 
         for (TimeSlot timeSlot : timeSlots) {
-            // 星期是否满足
+            // 跳过正在播放的时间段
+            if (playingSlots.containsKey(timeSlot.getSlotId())) {
+                continue;
+            }
+            // 跳过今天已经播放完毕的时间段
+            if (notLoopSlots.containsKey(timeSlot.getSlotId())) {
+                continue;
+            }
+            // 星期检查
             String[] selectedWeekdays = timeSlot.getWeekdays().split(",");
             boolean isWeekdayMatch = false;
 
@@ -54,15 +69,17 @@ public class ScheduledTasks {
                 continue;
             }
 
-            // 时间是否满足
+            // 时间检查
             LocalTime now = LocalTime.now();
             LocalTime startTime = timeSlot.getStartTime();
             LocalTime endTime = timeSlot.getEndTime();
-
-            // 如果开始时间满足的就异步执行直到结束，不满足就结束
             if (now.isAfter(startTime) && now.isBefore(endTime)) {
+
+                // 时间和星期都满足就标记为正在播放
+                playingSlots.put(timeSlot.getSlotId(), true);
+
                 try {
-                    // 根据音乐Ids表查询出所有的歌单，查询出来的歌单不排序 是什么样子的，等会去试一下
+                    // 根据音乐Ids表查询出所有的歌单
                     Long[] musicIds = Arrays.stream(timeSlot.getMusicIds().split(","))
                             .map(String::trim)
                             .filter(s -> !s.isEmpty())
@@ -70,7 +87,7 @@ public class ScheduledTasks {
                             .toArray(Long[]::new);
                     List<Music> music = iMusicService.selectMusicByIds(musicIds);
 
-                    // 记录初始播放模式 有无 循环 或者 乱序
+                    // 是否乱序 是否循环
                     String[] playModes = timeSlot.getPlayMode().split(",");
 
                     boolean isShuffle = false;
@@ -85,81 +102,79 @@ public class ScheduledTasks {
                     }
                     String playModeStr = isShuffle ? "乱序" : "顺序";
                     String loopStr = isLoop ? "循环" : "不循环";
-                    log.info("播放时间段 {}，播放模式: {}，循环模式: {}", timeSlot.getSlotId(), playModeStr, loopStr);
 
-                    // 处理播放顺序
+                    // 如果乱序就打算音乐单，如果顺序就排序音乐单
                     if (timeSlot.getPlayMode() == PlayMode.SHUFFLE.getValue()) {
                         Collections.shuffle(music); // 乱序
                     } else {
                         music = sortMusicListByIds(music, musicIds); //循序
                     }
 
-                    final List<Music> finalMusic = music;
-                    final Boolean finalIsShuffle = isShuffle;
-                    final Boolean finalIsLoop = isLoop;
+                    // 音乐在歌单中的下标
+                    int currentIndex = 0;
+                    // 循环次数
+                    int loopCount = 0;
+                    while (LocalTime.now().isBefore(endTime)) {
 
-                    // 异步播放音乐直到结束时间
-                    CompletableFuture.runAsync(() -> {
-                        // 歌单中的下标
-                        int currentIndex = 0;
-                        // 循环次数
-                        int loopCount = 0;
-                        while (LocalTime.now().isBefore(endTime)) {
-                            if (currentIndex >= finalMusic.size()) {
-                                if (finalIsLoop) {
-                                    currentIndex = 0;  // 循环播放则从头开始
-                                    if (timeSlot.getPlayMode() == PlayMode.SHUFFLE.getValue()) {
-                                        Collections.shuffle(finalMusic);  // 如果是乱序模式，每次循环重新打乱
-                                        log.info("播放时间段 {}，播放模式: {}，循环模式: {},歌单第{}次循环，已重新打乱顺序", timeSlot.getSlotId(), playModeStr, loopStr, loopCount);
-                                    } else {
-                                        log.info("播放时间段 {}，播放模式: {}，循环模式: {},歌单第{}次循环", timeSlot.getSlotId(), playModeStr, loopStr, loopCount);
-                                    }
-                                } else {
-                                    log.info("播放时间段 {}，播放模式: {}，循环模式: {},歌单第{}次循环,播放结束原因:歌单播放完毕(非循环模式)", timeSlot.getSlotId(), playModeStr, loopStr, loopCount);
-                                    break;  // 非循环模式则结束播放
+                        // 当歌单播放完成之后
+                        if (currentIndex >= music.size()) {
+                            if (isLoop) {
+                                currentIndex = 0;
+                                loopCount++;
+                                if (isShuffle) {
+                                    // 如果是乱序模式，每次循环重新打乱
+                                    Collections.shuffle(music);
                                 }
-                            }
-
-                            Music currentMusic = finalMusic.get(currentIndex);
-
-                            // 播放音乐的逻辑
-                            log.info("播放时间段 {}，播放模式: {}，循环模式: {},歌单第{}次循环，歌名：{}，ID: {}，歌手：{}，时长: {}秒",
-                                    timeSlot.getSlotId(),
-                                    playModeStr, loopStr,
-                                    loopCount,
-                                    currentMusic.getTitle(),
-                                    currentMusic.getMusicId(),
-                                    currentMusic.getArtist(),
-                                    currentMusic.getDuration());
-               
-
-                            // 等待音乐播放完成或到达结束时间
-                            long duration = currentMusic.getDuration();
-                            try {
-                                long waitTime = Math.min(duration * 1000, Duration.between(LocalTime.now(), endTime).toMillis());
-                                if (waitTime > 0) {
-                                    Thread.sleep(waitTime);
-                                } else {
-                                    log.info("播放时间段 {}，播放模式: {}，循环模式: {},歌单第{}次循环,播放结束原因:已到达时间段结束时间", timeSlot.getSlotId(), playModeStr, loopStr, loopCount);
-                                    break;
-                                }
-                            } catch (InterruptedException e) {
-                                Thread.currentThread().interrupt();
-                                log.info("播放时间段 {}，播放模式: {}，循环模式: {},歌单第{}次循环,播放结束原因:播放结束原因: 被中断", timeSlot.getSlotId(), playModeStr, loopStr, loopCount);
+                            } else {
+                                // 歌单播放完毕（非循环模式）
+                                log.info("播放时间段 {}，播放模式: {}，循环模式: {},歌单第{}次循环,播放结束原因:歌单播放完毕，非循环模式", timeSlot.getSlotId(), playModeStr, loopStr, loopCount);
+                                notLoopSlots.put(timeSlot.getSlotId(), true);
                                 break;
                             }
-                            currentIndex++;
                         }
-                        // 结尾
-                        if (LocalTime.now().isAfter(endTime)) {
-                            log.info("时间段 {} 已结束", timeSlot.getSlotId());
+
+                        Music currentMusic = music.get(currentIndex);
+
+                        // 播放音乐的逻辑
+                        log.info("播放时间段 {}，播放模式: {}，循环模式: {},歌单第{}次循环，歌名：{}，ID: {}，歌手：{}，时长: {}秒",
+                                timeSlot.getSlotId(),
+                                playModeStr, loopStr,
+                                loopCount,
+                                currentMusic.getTitle(),
+                                currentMusic.getMusicId(),
+                                currentMusic.getArtist(),
+                                currentMusic.getDuration());
+
+
+                        // 等待音乐播放完成或到达结束时间
+                        long duration = currentMusic.getDuration();
+                        try {
+                            long waitTime = Math.min(duration * 1000, Duration.between(LocalTime.now(), endTime).toMillis());
+                            if (waitTime > 0) {
+                                Thread.sleep(waitTime);
+                            } else {
+                                // 歌单播放完毕（时间段到了）
+                                log.info("播放时间段 {}，播放模式: {}，循环模式: {},歌单第{}次循环,播放结束原因:已到达时间段结束时间", timeSlot.getSlotId(), playModeStr, loopStr, loopCount);
+                                playingSlots.remove(timeSlot.getSlotId());
+                                break;
+                            }
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            break;
                         }
-                    });
+                        currentIndex++;
+                    }
 
                 } catch (Exception e) {
+                    playingSlots.remove(timeSlot.getSlotId());
                 }
             }
         }
+    }
+
+    @Scheduled(cron = "0 0 0 * * ?")
+    public void removeNotLoopSlotsScheduler() {
+        notLoopSlots.clear();
     }
 
     private static List<Music> sortMusicListByIds(List<Music> musicList, Long[] musicIds) {

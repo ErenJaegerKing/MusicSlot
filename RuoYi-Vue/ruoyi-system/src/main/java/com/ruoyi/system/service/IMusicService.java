@@ -2,6 +2,7 @@ package com.ruoyi.system.service;
 
 import java.util.List;
 import com.ruoyi.system.domain.Music;
+import com.ruoyi.system.domain.vo.MusicVo;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,7 +53,7 @@ public interface IMusicService
      * @param music 音乐
      * @return 结果
      */
-    public int updateMusic(Music music);
+    public int updateMusic(MultipartFile file,Music music);
 
     /**
      * 批量删除音乐

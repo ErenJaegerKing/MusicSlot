@@ -2,6 +2,8 @@ package com.ruoyi.web.controller.music;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.system.domain.vo.MusicVo;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -84,9 +86,9 @@ public class MusicController extends BaseController
     @PreAuthorize("@ss.hasPermi('system:music:edit')")
     @Log(title = "音乐", businessType = BusinessType.UPDATE)
     @PutMapping
-    public AjaxResult edit(@RequestBody Music music)
+    public AjaxResult edit(MultipartFile file,Music music)
     {
-        return toAjax(musicService.updateMusic(music));
+        return toAjax(musicService.updateMusic(file,music));
     }
 
     /**

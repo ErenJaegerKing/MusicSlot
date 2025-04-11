@@ -4,6 +4,7 @@ import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.file.FileUploadUtils;
 import com.ruoyi.common.utils.file.FileUtils;
 import com.ruoyi.system.domain.Music;
+import com.ruoyi.system.domain.vo.MusicVo;
 import com.ruoyi.system.mapper.MusicMapper;
 import com.ruoyi.system.service.IMusicService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,9 +92,17 @@ public class MusicServiceImpl implements IMusicService
      * @return 结果
      */
     @Override
-    public int updateMusic(Music music)
+    public int updateMusic(MultipartFile file,Music music)
     {
+        String filePath = null;
+        try {
+            filePath = FileUploadUtils.uploadMinio(file);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         music.setUpdateTime(DateUtils.getNowDate());
+        music.setFilePath(filePath);
+        music.setFileUrl(FileUtils.getName(filePath));
         return musicMapper.updateMusic(music);
     }
 

@@ -2,6 +2,8 @@ package com.ruoyi.web.controller.system;
 
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
+
+import com.ruoyi.common.constant.TimeSlotConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
@@ -130,4 +132,24 @@ public class SysConfigController extends BaseController
         configService.resetConfigCache();
         return success();
     }
+
+    /**
+     * 获得时间段当前状态
+     */
+    @GetMapping(value = "/timeslotStatus")
+    public String getTimeSlotEnabled()
+    {
+        return configService.selectTimeSlotEnabledByKey(TimeSlotConstants.TIMESLOT_QUERY_ENABLED);
+    }
+
+    /**
+     * 修改时间段状态
+     */
+    @PreAuthorize("@ss.hasPermi('system:config:add')")
+    @PostMapping(value = "/timeslotStatus")
+    public AjaxResult toggleTimeSlotEnabled()
+    {
+        return success(configService.updateTimeSlotEnabledByKey(TimeSlotConstants.TIMESLOT_QUERY_ENABLED));
+    }
+    
 }

@@ -1,12 +1,11 @@
 package com.ruoyi.system.service.impl;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
+import com.ruoyi.common.constant.TimeSlotConstants;
 import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.system.domain.SlotMusic;
-import com.ruoyi.system.service.ISlotMusicService;
+import com.ruoyi.system.service.ISysConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.system.mapper.TimeSlotMapper;
@@ -25,8 +24,8 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
     private TimeSlotMapper timeSlotMapper;
     
     @Autowired
-    private ISlotMusicService iSlotMusicService;
-
+    private ISysConfigService iSysConfigService;
+    
     /**
      * 查询时间段
      *
@@ -51,6 +50,10 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
 
     @Override
     public List<TimeSlot> selectAllTimeSlot() {
+        String enabled = iSysConfigService.selectTimeSlotEnabledByKey(TimeSlotConstants.TIMESLOT_QUERY_ENABLED);
+        if (TimeSlotConstants.DISENABLED.equals(enabled)) {
+            return Collections.emptyList();
+        }
         return timeSlotMapper.selectAllTimeSlot();
     }
 

@@ -69,6 +69,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where config_key = #{configKey} limit 1
     </select>
     
+    <select id="selectTimeSlotEnabledByKey" resultType="java.lang.String">
+        SELECT config_value FROM sys_config WHERE config_key = #{key}
+    </select>
+
     <insert id="insertConfig" parameterType="SysConfig">
         insert into sys_config (
 			<if test="configName != null and configName != '' ">config_name,</if>
@@ -102,7 +106,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </set>
         where config_id = #{configId}
     </update>
-	
+    
+    <update id="updateTimeSlotEnabledByKeyWithCAS">
+        UPDATE sys_config SET config_value = #{newStatus}
+        WHERE config_key = #{key} 
+        AND config_value = #{currentStatus}
+    </update>
+
     <delete id="deleteConfigById" parameterType="Long">
         delete from sys_config where config_id = #{configId}
     </delete>

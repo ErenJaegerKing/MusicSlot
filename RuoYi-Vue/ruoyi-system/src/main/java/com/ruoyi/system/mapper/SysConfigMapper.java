@@ -2,6 +2,7 @@ package com.ruoyi.system.mapper;
 
 import java.util.List;
 import com.ruoyi.system.domain.SysConfig;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 参数配置 数据层
@@ -73,4 +74,18 @@ public interface SysConfigMapper
      * @return 结果
      */
     public int deleteConfigByIds(Long[] configIds);
+    /**
+     * 根据键名查询时间段是否启用
+     *
+     * @param key 参数键名
+     * @return 参数键值
+     */
+    public String selectTimeSlotEnabledByKey(String key);
+    /**
+     * 更新时间段状态使用CAS(会有ABA问题，需要解决)
+     *
+     * @param key 参数键名
+     * @return 参数键值
+     */
+    public int updateTimeSlotEnabledByKeyWithCAS(@Param("key")String key,@Param("newStatus") String newStatus,@Param("currentStatus") String currentStatus);
 }

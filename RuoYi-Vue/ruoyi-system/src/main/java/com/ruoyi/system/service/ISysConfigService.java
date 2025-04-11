@@ -86,4 +86,20 @@ public interface ISysConfigService
      * @return 结果
      */
     public boolean checkConfigKeyUnique(SysConfig config);
+
+    /**
+     * 根据键名查询时间段是否启用
+     *
+     * @param key 参数键名
+     * @return 参数键值
+     */
+    public String selectTimeSlotEnabledByKey(String key);
+
+    /**
+     * 根据键名修改时间段启用状态
+     *
+     * @param key 参数键名
+     * @return 参数键值
+     */
+    public int updateTimeSlotEnabledByKey(String key);
 }

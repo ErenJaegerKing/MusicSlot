@@ -82,6 +82,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="startTime != null">start_time = #{startTime},</if>
             <if test="endTime != null">end_time = #{endTime},</if>
             <if test="slotName != null">slot_name = #{slotName},</if>
+            <if test="playMode != null">play_mode = #{playMode},</if>
+            <if test="weekdays != null">weekdays = #{weekdays},</if>
+            <if test="musicIds != null">music_ids = #{musicIds},</if>
             <if test="status != null">status = #{status},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
