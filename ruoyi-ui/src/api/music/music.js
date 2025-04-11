@@ -22,7 +22,10 @@ export function addMusic(data) {
   return request({
     url: '/music',
     method: 'post',
-    data: data
+    data: data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
   })
 }
 
@@ -31,7 +34,10 @@ export function updateMusic(data) {
   return request({
     url: '/music',
     method: 'put',
-    data: data
+    data: data,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
   })
 }
 

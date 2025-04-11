@@ -61,11 +61,6 @@ export const constantRoutes = [
     component: () => import('@/views/error/401'),
     hidden: true
   },
-  // {
-  //   path: '/music',
-  //   component: () => import('@/views/music'),
-  //   hidden: true
-  // },
   {
     path: '',
     component: Layout,
@@ -76,19 +71,6 @@ export const constantRoutes = [
         component: () => import('@/views/index'),
         name: 'Index',
         meta: { title: '首页', icon: 'dashboard', affix: true }
-      }
-    ]
-  },
-  {
-    path: '',
-    component: Layout,
-    redirect: 'music',
-    children: [
-      {
-        path: 'music',
-        component: () => import('@/views/music'),
-        name: 'Music',
-        meta: { title: '音乐点歌', icon: 'user', affix: true }
       }
     ]
   },

@@ -58,3 +58,22 @@ export function refreshCache() {
     method: 'delete'
   })
 }
+
+
+// 获得时间段当前状态
+export function getTimeSlotEnabled() {
+  return request({
+    url: '/system/config/timeslotStatus',
+    method: 'get'
+  })
+}
+
+
+
+// 修改时间段状态
+export function toggleTimeSlotEnabled() {
+  return request({
+    url: '/system/config/timeslotStatus',
+    method: 'post'
+  })
+}
