@@ -1,11 +1,15 @@
 package com.ruoyi.system.service.impl;
 
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
 import com.ruoyi.common.constant.TimeSlotConstants;
+import com.ruoyi.common.utils.CronUtil;
 import com.ruoyi.common.utils.DateUtils;
+import com.ruoyi.system.domain.ScheduledTaskBean;
 import com.ruoyi.system.service.ISysConfigService;
+import com.ruoyi.system.service.ScheduledTaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.system.mapper.TimeSlotMapper;
@@ -22,10 +26,13 @@ import com.ruoyi.system.service.ITimeSlotService;
 public class TimeSlotServiceImpl implements ITimeSlotService {
     @Autowired
     private TimeSlotMapper timeSlotMapper;
-    
+
     @Autowired
     private ISysConfigService iSysConfigService;
-    
+
+    @Autowired
+    private ScheduledTaskService taskService;
+
     /**
      * 查询时间段
      *
@@ -80,9 +87,24 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
 //                        counter.getAndIncrement()
 //                )).collect(Collectors.toList());
 //        iSlotMusicService.batchInsertSlotMusic(slotMusics);
+        // 生成cron表达式
+        LocalTime startTime = timeSlot.getStartTime();
+        String hour = String.format("%d", startTime.getHour());
+        String minute = String.format("%d", startTime.getMinute());
+        String cron = CronUtil.getCustomWeekDayHourMinuteCron(timeSlot.getWeekdays(), hour, minute);
+        // 动态生成定时任务 
+        ScheduledTaskBean taskBean = new ScheduledTaskBean();
+        taskBean.setTaskKey("musicScheduledTask");
+        taskBean.setTaskDesc("音乐点歌定时任务");
+        taskBean.setTaskCron(cron);
+        taskBean.setInitStartFlag(1);
+        taskBean.setStartFlag(false);
+        // 保存任务及Id
+        taskService.insertTaskBean(taskBean);
+        timeSlot.setSlotId(taskBean.getId());
         return timeSlotMapper.insertTimeSlot(timeSlot);
     }
-    
+
     /**
      * 修改时间段
      *
@@ -96,6 +118,17 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
     }
 
     /**
+     * 删除时间段信息
+     *
+     * @param slotId 时间段主键
+     * @return 结果
+     */
+    @Override
+    public int deleteTimeSlotBySlotId(Long slotId) {
+        return timeSlotMapper.deleteTimeSlotBySlotId(slotId);
+    }
+
+    /**
      * 批量删除时间段
      *
      * @param slotIds 需要删除的时间段主键
@@ -106,14 +139,4 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
         return timeSlotMapper.deleteTimeSlotBySlotIds(slotIds);
     }
 
-    /**
-     * 删除时间段信息
-     *
-     * @param slotId 时间段主键
-     * @return 结果
-     */
-    @Override
-    public int deleteTimeSlotBySlotId(Long slotId) {
-        return timeSlotMapper.deleteTimeSlotBySlotId(slotId);
-    }
 }

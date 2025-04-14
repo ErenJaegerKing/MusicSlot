@@ -450,7 +450,8 @@ export default {
     submitForm() {
       console.log(this.form)
       this.form.playMode = this.form.playModeArray.join(",");
-      this.form.weekdays = this.form.weekdaysArray.join(",");
+      // 创建新数组排序（不影响原数组）
+      this.form.weekdays = [...this.form.weekdaysArray].sort().join(",")
       this.form.musicIds = this.form.musicIdsArray.join(",");
       if (this.form.startTime > this.form.endTime) {
         this.$message.warning("开始时间不能大于结束时间")

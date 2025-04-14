@@ -70,11 +70,11 @@ public class MusicServiceImpl implements IMusicService
     public int insertMusic(MultipartFile[] file)
     {
         String filePath = null;
-        try {
-            filePath = FileUploadUtils.uploadMinio(file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+//        try {
+//            filePath = FileUploadUtils.uploadMinio(file);
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
         Music music = new Music();
         music.setFilePath(filePath);
         music.setFileUrl(FileUtils.getName(filePath));

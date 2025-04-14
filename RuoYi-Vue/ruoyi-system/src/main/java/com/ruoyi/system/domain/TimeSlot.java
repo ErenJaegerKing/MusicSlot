@@ -67,7 +67,19 @@ public class TimeSlot extends BaseEntity {
      */
     @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
     private String status;
+    
+    /**
+     * 任务Id
+     */
+    private Long taskId;
 
+    public Long getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(Long taskId) {
+        this.taskId = taskId;
+    }
 
 
     public String getMusicIds() {
