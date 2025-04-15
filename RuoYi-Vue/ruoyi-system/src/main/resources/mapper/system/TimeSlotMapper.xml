@@ -115,7 +115,7 @@
             <if test="weekdays != null">weekdays = #{weekdays},</if>
             <if test="musicIds != null">music_ids = #{musicIds},</if>
             <if test="status != null">status = #{status},</if>
-            <if test="taskId != null">task_id,</if>
+            <if test="taskId != null">task_id = #{task_id},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
