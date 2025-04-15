@@ -5,6 +5,8 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import com.ruoyi.common.constant.TimeSlotConstants;
+import com.ruoyi.system.service.ScheduleExecService;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.common.annotation.DataSource;
@@ -31,7 +33,10 @@ public class SysConfigServiceImpl implements ISysConfigService {
 
     @Autowired
     private RedisCache redisCache;
-
+    
+    @Autowired
+    private ScheduleExecService scheduleExecService; 
+    
     /**
      * 项目启动时，初始化参数到缓存
      */
@@ -217,14 +222,17 @@ public class SysConfigServiceImpl implements ISysConfigService {
      */
     @Override
     public int updateTimeSlotEnabledByKey(String key) {
+        // TODO 是否可以采用Redis，对于状态的编辑
+        // 获得定时任务当前的状态
         String currentStatus = configMapper.selectTimeSlotEnabledByKey(key);
-//        Boolean enabled = false;
-//        if (oldValue.equals(TimeSlotConstants.ENABLED)) {
-//            enabled = true;
-//        } else {
-//            enabled = false;
-//        }
+        // 修改状态为相反
         String newStatus = currentStatus.equals(TimeSlotConstants.ENABLED) ? TimeSlotConstants.DISENABLED : TimeSlotConstants.ENABLED;
+        // 如果new是启用，那就refresh，如果new是禁用，那就暂停所有线程
+        if (newStatus.equals(TimeSlotConstants.ENABLED)) {
+            scheduleExecService.refresh();
+        } else if (newStatus.equals(TimeSlotConstants.DISENABLED)) {
+            scheduleExecService.stopAll();
+        }
         return configMapper.updateTimeSlotEnabledByKeyWithCAS(key, newStatus, currentStatus);
     }
 

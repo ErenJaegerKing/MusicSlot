@@ -20,6 +20,14 @@ public interface ITimeSlotService
     public TimeSlot selectTimeSlotBySlotId(Long slotId);
 
     /**
+     * 根据定时任务Id查询时间段
+     *
+     * @param taskId 定时任务主键
+     * @return 时间段
+     */
+    public TimeSlot selectTimeSlotByTaskId(String taskId);
+    
+    /**
      * 查询时间段列表
      * 
      * @param timeSlot 时间段

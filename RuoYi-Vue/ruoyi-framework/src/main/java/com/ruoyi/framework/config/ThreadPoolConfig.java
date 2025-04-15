@@ -1,17 +1,15 @@
 package com.ruoyi.framework.config;
 
-import com.ruoyi.system.domain.ScheduledTaskEnum;
 import com.ruoyi.common.utils.Threads;
-import com.ruoyi.system.service.ScheduledTaskJob;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
-import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -55,6 +53,16 @@ public class ThreadPoolConfig
         return executor;
     }
 
+    @Bean
+    public TaskScheduler taskScheduler() {
+        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+        // 定时任务执行线程池核心线程数
+        taskScheduler.setPoolSize(corePoolSize);
+        taskScheduler.setRemoveOnCancelPolicy(true);
+        taskScheduler.setThreadNamePrefix("AntiFraudSchedulerThreadPool-");
+        return taskScheduler;
+    }
+    
     /**
      * 执行周期性或定时任务
      */
@@ -72,28 +80,6 @@ public class ThreadPoolConfig
                 Threads.printException(r, t);
             }
         };
-    }
-
-    @Bean
-    public ThreadPoolTaskScheduler threadPoolTaskScheduler() {
-        LOGGER.info("创建定时任务调度线程池 start");
-        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
-        taskScheduler.setPoolSize(20);
-        taskScheduler.setThreadNamePrefix("taskExecutor-");
-        taskScheduler.setWaitForTasksToCompleteOnShutdown(true);
-        taskScheduler.setAwaitTerminationSeconds(60);
-        LOGGER.info("创建定时任务调度线程池 end");
-        return taskScheduler;
-    }
-
-    /**
-     * 初始化定时任务Map
-     * key :任务key
-     * value : 执行接口实现
-     */
-    @Bean(name = "scheduledTaskJobMap")
-    public Map<String, ScheduledTaskJob> scheduledTaskJobMap() {
-        return ScheduledTaskEnum.initScheduledTask();
     }
     
 }

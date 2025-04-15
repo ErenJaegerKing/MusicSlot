@@ -15,40 +15,37 @@ import java.util.List;
 
 /**
  * 音乐Service业务层处理
- * 
+ *
  * @author ruoyi
  * @date 2025-04-08
  */
 @Service
-public class MusicServiceImpl implements IMusicService 
-{
+public class MusicServiceImpl implements IMusicService {
     @Autowired
     private MusicMapper musicMapper;
-    
+
     /**
      * 查询音乐
-     * 
+     *
      * @param musicId 音乐主键
      * @return 音乐
      */
     @Override
-    public Music selectMusicByMusicId(Long musicId)
-    {
+    public Music selectMusicByMusicId(Long musicId) {
         return musicMapper.selectMusicByMusicId(musicId);
     }
 
     /**
      * 查询音乐列表
-     * 
+     *
      * @param music 音乐
      * @return 音乐
      */
     @Override
-    public List<Music> selectMusicList(Music music)
-    {
+    public List<Music> selectMusicList(Music music) {
         return musicMapper.selectMusicList(music);
     }
-    
+
     /**
      * 批量查询音乐
      *
@@ -62,13 +59,12 @@ public class MusicServiceImpl implements IMusicService
 
     /**
      * 新增音乐
-     * 
+     *
      * @param music 音乐
      * @return 结果
      */
     @Override
-    public int insertMusic(MultipartFile[] file)
-    {
+    public int insertMusic(MultipartFile[] file) {
         String filePath = null;
 //        try {
 //            filePath = FileUploadUtils.uploadMinio(file);
@@ -84,13 +80,12 @@ public class MusicServiceImpl implements IMusicService
 
     /**
      * 修改音乐
-     * 
+     *
      * @param music 音乐
      * @return 结果
      */
     @Override
-    public int updateMusic(MultipartFile file,Music music)
-    {
+    public int updateMusic(MultipartFile file, Music music) {
         String filePath = null;
         try {
             filePath = FileUploadUtils.uploadMinio(file);
@@ -105,25 +100,23 @@ public class MusicServiceImpl implements IMusicService
 
     /**
      * 批量删除音乐
-     * 
+     *
      * @param musicIds 需要删除的音乐主键
      * @return 结果
      */
     @Override
-    public int deleteMusicByMusicIds(Long[] musicIds)
-    {
+    public int deleteMusicByMusicIds(Long[] musicIds) {
         return musicMapper.deleteMusicByMusicIds(musicIds);
     }
 
     /**
      * 删除音乐信息
-     * 
+     *
      * @param musicId 音乐主键
      * @return 结果
      */
     @Override
-    public int deleteMusicByMusicId(Long musicId)
-    {
+    public int deleteMusicByMusicId(Long musicId) {
         return musicMapper.deleteMusicByMusicId(musicId);
     }
 }

@@ -108,7 +108,7 @@
         <template slot-scope="scope">
           <div v-if="scope.row.playMode">
             <el-tag
-              v-for="mode in scope.row.playMode.split(',')"
+              v-for="mode in scope.row.playMode"
               :key="mode"
               style="margin-right: 5px"
             >
@@ -196,12 +196,12 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-form-item label="播放模式" prop="playModeArray">
-          <el-checkbox-group v-model="form.playModeArray" size="medium">
-            <el-checkbox v-for="(item, index) in playModeOptions" :key="index" :label="item.value"
+        <el-form-item label="播放模式" prop="playMode">
+          <el-radio-group v-model="form.playMode" size="medium">
+            <el-radio v-for="(item, index) in playModeOptions" :key="index" :label="item.value"
                          :disabled="item.disabled">{{ item.label }}
-            </el-checkbox>
-          </el-checkbox-group>
+            </el-radio>
+          </el-radio-group>
         </el-form-item>
         <el-form-item label-width="110px" label="每周播放日期" prop="weekdaysArray">
           <el-checkbox-group v-model="form.weekdaysArray" size="medium">
@@ -281,25 +281,28 @@ export default {
         endTime: [
           {required: true, message: "结束时间不能为空", trigger: "blur"}
         ],
+        playMode: [{
+          required: true,
+          message: '请至少选择一个播放模式',
+          trigger: 'blur'
+        }],
         weekdaysArray: [{
           required: true,
-          type: 'array',
-          message: '请至少选择一个星期',
+          message: '请至少选择一个播放模式',
           trigger: 'blur'
         }],
         musicIdsArray: [{
           required: true,
-          type: 'array',
           message: '请至少选择一个星期',
           trigger: 'blur'
         }],
       },
       playModeOptions: [{
-        "label": "循环播放",
-        "value": 1
+        "label": "顺序播放",
+        "value": "1"
       }, {
         "label": "乱序播放",
-        "value": 2
+        "value": "2"
       }],
       weekdaysOptions: [{
         "label": "星期一",
@@ -336,7 +339,7 @@ export default {
   methods: {
     getModeName(mode) {
       const modeMap = {
-        "1": "循环",
+        "1": "顺序",
         "2": "乱序",
       };
       return modeMap[mode] || mode
@@ -393,7 +396,6 @@ export default {
         slotName: null,
         startTime: null,
         endTime: null,
-        playModeArray: [],
         weekdaysArray: [],
         musicIdsArray: [],
         playMode: null,
@@ -437,7 +439,6 @@ export default {
       const slotId = row.slotId || this.ids
       getSlot(slotId).then(response => {
         this.form = response.data;
-        this.$set(this.form,'playModeArray',this.form.playMode.split(',').map(Number));
         this.$set(this.form,'weekdaysArray',this.form.weekdays.split(',').map(Number));
         this.$set(this.form,'musicIdsArray',this.form.musicIds.split(',').map(Number));
         this.open = true;
@@ -449,7 +450,6 @@ export default {
     /** 提交按钮 */
     submitForm() {
       console.log(this.form)
-      this.form.playMode = this.form.playModeArray.join(",");
       // 创建新数组排序（不影响原数组）
       this.form.weekdays = [...this.form.weekdaysArray].sort().join(",")
       this.form.musicIds = this.form.musicIdsArray.join(",");

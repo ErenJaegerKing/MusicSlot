@@ -1,20 +1,21 @@
 package com.ruoyi.system.service.impl;
 
-import java.time.LocalTime;
-import java.util.Collections;
-import java.util.List;
-
 import com.ruoyi.common.constant.TimeSlotConstants;
 import com.ruoyi.common.utils.CronUtil;
 import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.system.domain.ScheduledTaskBean;
+import com.ruoyi.system.domain.TimeSlot;
+import com.ruoyi.system.domain.dto.ScheduleSettingDTO;
+import com.ruoyi.system.mapper.TimeSlotMapper;
 import com.ruoyi.system.service.ISysConfigService;
-import com.ruoyi.system.service.ScheduledTaskService;
+import com.ruoyi.system.service.ITimeSlotService;
+import com.ruoyi.system.service.ScheduleExecService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.system.mapper.TimeSlotMapper;
-import com.ruoyi.system.domain.TimeSlot;
-import com.ruoyi.system.service.ITimeSlotService;
+
+import java.time.LocalTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 时间段Service业务层处理
@@ -31,7 +32,7 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
     private ISysConfigService iSysConfigService;
 
     @Autowired
-    private ScheduledTaskService taskService;
+    private ScheduleExecService scheduleExecService;
 
     /**
      * 查询时间段
@@ -42,6 +43,17 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
     @Override
     public TimeSlot selectTimeSlotBySlotId(Long slotId) {
         return timeSlotMapper.selectTimeSlotBySlotId(slotId);
+    }
+
+    /**
+     * 根据定时任务Id查询时间段
+     *
+     * @param taskId 定时任务主键
+     * @return 时间段
+     */
+    @Override
+    public TimeSlot selectTimeSlotByTaskId(String taskId) {
+        return timeSlotMapper.selectTimeSlotByTaskId(taskId);
     }
 
     /**
@@ -74,34 +86,20 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
     @Override
     public int insertTimeSlot(TimeSlot timeSlot) {
         timeSlot.setCreateTime(DateUtils.getNowDate());
-//        // 保存时间段
-//        timeSlotMapper.insertTimeSlot(timeSlot);
-//        // 自增计数器
-//        AtomicInteger counter = new AtomicInteger(1);
-//        // 保存关联关系表（不需要）
-//        List<SlotMusic> slotMusics = timeSlot.getMusicIds().stream()
-//                .map(musicId -> new SlotMusic(
-//                        null,
-//                        timeSlot.getSlotId(),
-//                        musicId,
-//                        counter.getAndIncrement()
-//                )).collect(Collectors.toList());
-//        iSlotMusicService.batchInsertSlotMusic(slotMusics);
         // 生成cron表达式
         LocalTime startTime = timeSlot.getStartTime();
-        String hour = String.format("%d", startTime.getHour());
-        String minute = String.format("%d", startTime.getMinute());
-        String cron = CronUtil.getCustomWeekDayHourMinuteCron(timeSlot.getWeekdays(), hour, minute);
-        // 动态生成定时任务 
-        ScheduledTaskBean taskBean = new ScheduledTaskBean();
-        taskBean.setTaskKey("musicScheduledTask");
-        taskBean.setTaskDesc("音乐点歌定时任务");
-        taskBean.setTaskCron(cron);
-        taskBean.setInitStartFlag(1);
-        taskBean.setStartFlag(false);
-        // 保存任务及Id
-        taskService.insertTaskBean(taskBean);
-        timeSlot.setSlotId(taskBean.getId());
+        String cron = CronUtil.getCustomWeekDayHourMinuteCron(timeSlot.getWeekdays(),
+                String.format("%d", startTime.getHour()),
+                String.format("%d", startTime.getMinute()));
+        // 添加定时任务
+        ScheduleSettingDTO scheduleSettingDTO = new ScheduleSettingDTO();
+        scheduleSettingDTO.setId(UUID.randomUUID().toString());
+        scheduleSettingDTO.setJobId(UUID.randomUUID().toString());
+        scheduleSettingDTO.setCronExpression(cron);
+        scheduleExecService.add(scheduleSettingDTO);
+        // 关联时间段与定时任务
+        timeSlot.setTaskId(scheduleSettingDTO.getId());
+
         return timeSlotMapper.insertTimeSlot(timeSlot);
     }
 
@@ -125,6 +123,17 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
      */
     @Override
     public int deleteTimeSlotBySlotId(Long slotId) {
+        // 查询时间段获得任务Id
+        TimeSlot timeSlot = timeSlotMapper.selectTimeSlotBySlotId(slotId);
+        String taskId = timeSlot.getTaskId();
+        // 停止定时任务
+        ScheduleSettingDTO scheduleSettingDTO = new ScheduleSettingDTO();
+        scheduleSettingDTO.setId(taskId);
+        try {
+            scheduleExecService.stop(scheduleSettingDTO);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return timeSlotMapper.deleteTimeSlotBySlotId(slotId);
     }
 
@@ -136,6 +145,19 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
      */
     @Override
     public int deleteTimeSlotBySlotIds(Long[] slotIds) {
+        List<TimeSlot> timeSlots = timeSlotMapper.selectTimeSlotBySlotIds(slotIds);
+        for (TimeSlot timeSlot : timeSlots) {
+            // 查询时间段获得任务Id
+            String taskId = timeSlot.getTaskId();
+            // 停止定时任务
+            ScheduleSettingDTO scheduleSettingDTO = new ScheduleSettingDTO();
+            scheduleSettingDTO.setId(taskId);
+            try {
+                scheduleExecService.stop(scheduleSettingDTO);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         return timeSlotMapper.deleteTimeSlotBySlotIds(slotIds);
     }
 

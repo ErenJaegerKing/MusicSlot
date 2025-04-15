@@ -2,6 +2,8 @@ package com.ruoyi.system.mapper;
 
 import java.util.List;
 import com.ruoyi.system.domain.TimeSlot;
+import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 /**
  * 时间段Mapper接口
@@ -18,6 +20,22 @@ public interface TimeSlotMapper
      * @return 时间段
      */
     public TimeSlot selectTimeSlotBySlotId(Long slotId);
+
+    /**
+     * 根据定时任务Id查询时间段
+     *
+     * @param taskId 定时任务主键
+     * @return 时间段
+     */
+    public TimeSlot selectTimeSlotByTaskId(String taskId);
+
+    /**
+     * 查询时间段列表
+     *
+     * @param slotIds 时间段主键
+     * @return 时间段
+     */
+    public List<TimeSlot> selectTimeSlotBySlotIds(Long[] slotIds);
 
     /**
      * 查询时间段列表

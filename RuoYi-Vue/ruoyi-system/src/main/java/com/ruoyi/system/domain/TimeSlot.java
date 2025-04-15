@@ -55,32 +55,31 @@ public class TimeSlot extends BaseEntity {
      */
     @Excel(name = "播放时段")
     private String weekdays;
-    
+
     /**
      * 音乐Ids
      */
     @Excel(name = "音乐Ids")
     private String musicIds;
-    
+
     /**
      * 状态（0正常 1停用）
      */
     @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
     private String status;
-    
+
     /**
      * 任务Id
      */
-    private Long taskId;
+    private String taskId;
 
-    public Long getTaskId() {
+    public String getTaskId() {
         return taskId;
     }
 
-    public void setTaskId(Long taskId) {
+    public void setTaskId(String taskId) {
         this.taskId = taskId;
     }
-
 
     public String getMusicIds() {
         return musicIds;
@@ -105,7 +104,7 @@ public class TimeSlot extends BaseEntity {
     public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
     }
-    
+
     public String getPlayMode() {
         return playMode;
     }
@@ -121,7 +120,7 @@ public class TimeSlot extends BaseEntity {
     public void setWeekdays(String weekdays) {
         this.weekdays = weekdays;
     }
-    
+
     public void setSlotId(Long slotId) {
         this.slotId = slotId;
     }

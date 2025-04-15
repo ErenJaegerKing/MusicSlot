@@ -2,7 +2,6 @@ package com.ruoyi.common.utils;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 
 /**
