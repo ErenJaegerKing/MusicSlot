@@ -126,6 +126,19 @@
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
 
+        <!-- ruoyi-springboot2 / mybatis-plus 配置 -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+            <version>3.5.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.shiro</groupId>
+            <artifactId>shiro-core</artifactId>
+            <version>1.9.0</version> <!-- 版本可调整到最新 -->
+        </dependency>
+        
     </dependencies>
 
 </project>
