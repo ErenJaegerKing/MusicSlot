@@ -421,7 +421,8 @@ export default {
     getMusicList() {
       listMusic(this.queryParams).then(response => {
         this.musicList = response.rows.map(item => ({
-          label: `${item.title} - ${item.artist}`,
+          // label: `${item.title} - ${item.artist}`,
+          label: `${item.title}`,
           value: item.musicId,
         }));
       });

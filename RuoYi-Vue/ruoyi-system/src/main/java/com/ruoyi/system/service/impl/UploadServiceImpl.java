@@ -38,10 +38,10 @@ public class UploadServiceImpl implements UploadService {
 
     @Resource
     private RedisCache redisCache;
-    
+
     @Autowired
     private IMusicService musicService;
-    
+
     @Value("${minio.breakpoint-time}")
     private Integer breakpointTime;
 
@@ -64,37 +64,40 @@ public class UploadServiceImpl implements UploadService {
                     fileUploadInfo.getUploadId(),
                     fileUploadInfo.getFileType());
             fileUploadInfo.setChunkUploadedList(chunkList);
-            r.put("data",fileUploadInfo);
-            r.put("code1",RespEnum.UPLOADING.getCode());
-            r.put("msg",RespEnum.UPLOADING.getMessage());
-            return  r;
+            r.put("data", fileUploadInfo);
+            r.put("code1", RespEnum.UPLOADING.getCode());
+            r.put("msg", RespEnum.UPLOADING.getMessage());
+            return r;
         }
         log.info("tip message: 通过 <{}> 查询mysql是否存在", md5);
         // 查询数据库是否上传成功
         Files one = filesMapper.selectOne(
                 new LambdaQueryWrapper<Files>().eq(Files::getFileMd5, md5));
         if (one != null) {
-            r.put("code1",RespEnum.UPLOADSUCCESSFUL.getCode());
-            r.put("msg",RespEnum.UPLOADSUCCESSFUL.getMessage());
-            r.put("data",one);
-            
-            // 查询该音乐是否存在
-            Boolean isExist = musicService.findByFileMd5(one.getFileMd5());
-            if (!isExist) {
-                // 创建音乐
-                Music music = new Music();
-                music.setTitle(one.getFileName());
-                music.setFilePath(one.getUrl());
-                music.setFileMd5(one.getFileMd5());
-                // 默认音乐时长为10秒钟
-                music.setDuration(10L);
-                musicService.insertMusic(music);
+            r.put("code1", RespEnum.UPLOADSUCCESSFUL.getCode());
+            r.put("msg", RespEnum.UPLOADSUCCESSFUL.getMessage());
+            r.put("data", one);
+
+            // 音乐 - 查询是否存在
+            if (one.getFileType().equals("radio")) {
+                Boolean isExist = musicService.findByFileMd5(one.getFileMd5());
+                if (!isExist) {
+                    // 创建音乐
+                    Music music = new Music();
+                    music.setTitle(one.getFileName());
+                    music.setFilePath(one.getUrl());
+                    music.setFileMd5(one.getFileMd5());
+                    // 默认音乐时长为10秒钟
+                    music.setDuration(10L);
+                    musicService.insertMusic(music);
+                }
             }
-            
+
+
             return r;
         }
-        r.put("code1",RespEnum.NOT_UPLOADED.getCode());
-        r.put("msg",RespEnum.NOT_UPLOADED.getMessage());
+        r.put("code1", RespEnum.NOT_UPLOADED.getCode());
+        r.put("msg", RespEnum.NOT_UPLOADED.getMessage());
         return r;
     }
 
@@ -128,7 +131,7 @@ public class UploadServiceImpl implements UploadService {
             Map<String, Object> map = minioUtil.initMultiPartUpload(fileUploadInfo, fileUploadInfo.getFileName(), fileUploadInfo.getChunkNum(), fileUploadInfo.getContentType(), bucketName);
             String uploadId = (String) map.get("uploadId");
             fileUploadInfo.setUploadId(uploadId);
-            redisCache.setCacheObject(fileUploadInfo.getFileMd5(),fileUploadInfo,breakpointTime*60*60*24, TimeUnit.SECONDS);
+            redisCache.setCacheObject(fileUploadInfo.getFileMd5(), fileUploadInfo, breakpointTime * 60 * 60 * 24, TimeUnit.SECONDS);
             return map;
         }
     }
@@ -143,15 +146,18 @@ public class UploadServiceImpl implements UploadService {
         files.setUrl(url);
         filesMapper.insert(files);
         
-        // 创建音乐
-        Music music = new Music();
-        music.setTitle(files.getFileName());
-        music.setFilePath(files.getUrl());
-        music.setFileMd5(files.getFileMd5());
-        // 默认音乐时长为10秒钟
-        music.setDuration(10L);
-        musicService.insertMusic(music);
-        
+        // 音乐 - 创建音乐
+        if (fileUploadInfo.getFileType().equals("radio")) {
+            // 创建音乐
+            Music music = new Music();
+            music.setTitle(files.getFileName());
+            music.setFilePath(files.getUrl());
+            music.setFileMd5(files.getFileMd5());
+            // 默认音乐时长为10秒钟
+            music.setDuration(10L);
+            musicService.insertMusic(music);
+        }
+
         return files;
     }
 
@@ -170,7 +176,7 @@ public class UploadServiceImpl implements UploadService {
     public String mergeMultipartUpload(FileUploadInfo fileUploadInfo) {
         log.info("tip message: 通过 <{}> 开始合并<分片上传>任务", fileUploadInfo);
         FileUploadInfo redisFileUploadInfo = redisCache.getCacheObject(fileUploadInfo.getFileMd5());
-        if(redisFileUploadInfo!=null){
+        if (redisFileUploadInfo != null) {
             fileUploadInfo.setFileName(redisFileUploadInfo.getFileName());
         }
         boolean result = minioUtil.mergeMultipartUpload(fileUploadInfo.getFileName(), fileUploadInfo.getUploadId(), fileUploadInfo.getFileType());
