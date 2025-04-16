@@ -66,9 +66,8 @@ public class MusicController extends BaseController {
     @PreAuthorize("@ss.hasPermi('system:music:add')")
     @Log(title = "音乐", businessType = BusinessType.INSERT)
     @PostMapping
-    public AjaxResult add(
-            @RequestParam("file") MultipartFile[] file) {
-        return toAjax(musicService.insertMusic(file));
+    public AjaxResult add(@RequestBody Music music) {
+        return toAjax(musicService.insertMusic(music));
     }
 
     /**

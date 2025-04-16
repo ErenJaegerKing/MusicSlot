@@ -139,6 +139,12 @@
             <version>1.9.0</version> <!-- 版本可调整到最新 -->
         </dependency>
         
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.37</version>
+        </dependency>
+
     </dependencies>
 
 </project>

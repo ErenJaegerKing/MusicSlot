@@ -28,12 +28,11 @@
 
     <el-table v-loading="loading" :data="musicList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center"/>
-      <el-table-column label="音乐ID" align="center" prop="musicId"/>
-      <el-table-column label="歌曲名称" align="center" prop="title"/>
-      <el-table-column label="歌手" align="center" prop="artist"/>
+      <el-table-column label="音乐ID" align="center" prop="musicId" width="100px"/>
+      <el-table-column label="歌曲" align="center" prop="title"/>
       <!--      <el-table-column label="时长(秒)" align="center" prop="duration"/>-->
-      <el-table-column label="路径" align="center" prop="fileUrl"/>
-      <el-table-column label="状态" align="center" prop="status"/>
+      <!--      <el-table-column label="路径" align="center" prop="fileUrl"/>-->
+      <!--      <el-table-column label="状态" align="center" prop="status"/>-->
       <!--      <el-table-column label="备注" align="center" prop="remark"/>-->
       <el-table-column label="播放" align="center">
         <template #default="scope">
@@ -68,7 +67,7 @@
     />
 
     <!-- 添加或修改音乐对话框 -->
-    <el-dialog :title="title" :visible.sync="open" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" append-to-body @close="handleClose">
       <el-upload class="upload-demo"
                  ref="upload"
                  action="#"
@@ -82,18 +81,10 @@
         <el-button style="margin-left: 5px;" type="success" @click="handler" plain>上传</el-button>
         <el-button type="danger" @click="clearFileHandler" plain>清空</el-button>
         <table style="margin-top: 20px">
-          <th style="display:inline-block;font-size: 12px;color: #909399;margin-left: 100px">
-            文件名
-          </th>
-          <th style="display:inline-block;;font-size: 12px;color: #909399;margin-left: 130px;">
-            文件大小
-          </th>
-          <th style="display:inline-block;;font-size: 12px;color: #909399;margin-left: 130px">
-            上传进度
-          </th>
-          <th style="display:inline-block;;font-size: 12px;color: #909399;margin-left: 150px">
-            状态
-          </th>
+          <th style="display:inline-block;font-size: 12px;color: #909399;margin-left: 100px">文件名</th>
+          <th style="display:inline-block;;font-size: 12px;color: #909399;margin-left: 130px;">文件大小</th>
+          <th style="display:inline-block;;font-size: 12px;color: #909399;margin-left: 130px">上传进度</th>
+          <th style="display:inline-block;;font-size: 12px;color: #909399;margin-left: 150px">状态</th>
         </table>
         <!-- 文件列表 -->
         <div class="file-list-wrapper">
@@ -146,7 +137,7 @@
 import {listMusic, getMusic, delMusic} from "@/api/music/music";
 import axios from "axios";
 import SparkMD5 from 'spark-md5';
-import {checkUpload, initUpload} from "@/api/system/upload";
+import {checkUpload, initUpload, mergeUpload} from "@/api/system/upload";
 import {fileSuffixTypeUtil} from "@/utils/FileUtil";
 
 export default {
@@ -208,7 +199,7 @@ export default {
       // 文件上传Id主键
       FILE_UPLOAD_ID_KEY: 'file_upload_id',
       // 分片大小
-      chunkSize: 10 * 1024 * 1024,
+      chunkSize: 30 * 1024 * 1024,
     };
   },
   created() {
@@ -296,7 +287,7 @@ export default {
         const checkResult = await self.checkFileUploadedByMd5(md5)
         console.log("检查是否已上传-->", checkResult)
         // debugger
-        if (checkResult.code === 1) {
+        if (checkResult.code1 === 1) {
           //self.$message.success(`上传成功，文件地址：${checkResult.data.url}`)
           console.log('上传成功文件访问地址：' + checkResult.data.url)
           currentFile.status = this.FileStatus.success
@@ -305,7 +296,7 @@ export default {
           this.currentFileIndex++;
           this.handler()
           return
-        } else if (checkResult.code === 2) {  // "上传中" 状态
+        } else if (checkResult.code1 === 2) {  // "上传中" 状态
           // 获取已上传分片列表
           console.log("上传中：", checkResult)
           currentFile.status = this.FileStatus.uploading
@@ -406,7 +397,7 @@ export default {
         if (uploadIdInfo.uploadId === "SingleFileUpload") {
           console.log("单文件上传");
           //更新状态
-          currentFile.status = FileStatus.success
+          currentFile.status = this.FileStatus.success
           //文件下标偏移
           this.currentFileIndex++;
           //递归上传下一个文件
@@ -450,6 +441,7 @@ export default {
      * @param callback
      */
     getFileMd5(file, callback) {
+      const self = this
       // l 获取文件切片方法的兼容性写法
       const blobSlice = File.prototype.slice || File.prototype.mozSlice || File.prototype.webkitSlice
       // l 创建一个 FileReader 对象用于读取文件内容
@@ -480,8 +472,8 @@ export default {
       }
 
       function loadNext() {
-        const start = currentChunk * this.chunkSize
-        const end = ((start + this.chunkSize) >= file.size) ? file.size : start + this.chunkSize
+        const start = currentChunk * self.chunkSize
+        const end = ((start + self.chunkSize) >= file.size) ? file.size : start + self.chunkSize
         // 注意这里的 fileRaw
         // l FileReader 是单次操作的，但每次调用 readAsArrayBuffer() 都会重新触发 onload
         fileReader.readAsArrayBuffer(blobSlice.call(file, start, end))
@@ -658,10 +650,10 @@ export default {
           let data = response
           console.log("@@@", data)
           if (!data) {
-            data.msg = FileStatus.error
+            data.msg = this.FileStatus.error
             resolve(data)
           } else {
-            data.msg = FileStatus.success
+            data.msg = this.FileStatus.success
             resolve(data)
           }
         })
@@ -674,6 +666,11 @@ export default {
     },
 
     // Minio分片上传 ----------------------------------------------------------
+    handleClose() {
+      this.open = false;
+      this.reset();
+      this.getList()
+    },
 
     // 取消按钮
     cancel() {

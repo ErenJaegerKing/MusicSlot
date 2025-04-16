@@ -1,8 +1,6 @@
 package com.ruoyi.system.service.impl;
 
-import com.ruoyi.common.utils.DateUtils;
-import com.ruoyi.common.utils.file.FileUploadUtils;
-import com.ruoyi.common.utils.file.FileUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.system.domain.Music;
 import com.ruoyi.system.mapper.MusicMapper;
 import com.ruoyi.system.service.IMusicService;
@@ -10,7 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 
 /**
@@ -64,17 +61,7 @@ public class MusicServiceImpl implements IMusicService {
      * @return 结果
      */
     @Override
-    public int insertMusic(MultipartFile[] file) {
-        String filePath = null;
-//        try {
-//            filePath = FileUploadUtils.uploadMinio(file);
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-        Music music = new Music();
-        music.setFilePath(filePath);
-        music.setFileUrl(FileUtils.getName(filePath));
-        music.setCreateTime(DateUtils.getNowDate());
+    public int insertMusic(Music music) {
         return musicMapper.insertMusic(music);
     }
 
@@ -86,15 +73,7 @@ public class MusicServiceImpl implements IMusicService {
      */
     @Override
     public int updateMusic(MultipartFile file, Music music) {
-        String filePath = null;
-        try {
-            filePath = FileUploadUtils.uploadMinio(file);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        music.setUpdateTime(DateUtils.getNowDate());
-        music.setFilePath(filePath);
-        music.setFileUrl(FileUtils.getName(filePath));
+        // TODO 配合分片上传
         return musicMapper.updateMusic(music);
     }
 
@@ -118,5 +97,13 @@ public class MusicServiceImpl implements IMusicService {
     @Override
     public int deleteMusicByMusicId(Long musicId) {
         return musicMapper.deleteMusicByMusicId(musicId);
+    }
+
+    @Override
+    public Boolean findByFileMd5(String md5) {
+        LambdaQueryWrapper<Music> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Music::getFileMd5, md5);
+        Music music = musicMapper.selectOne(wrapper);
+        return music != null;
     }
 }

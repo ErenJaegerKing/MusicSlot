@@ -130,9 +130,12 @@ xss:
 
 # Minio配置
 minio:
-  url: http://192.168.118.129:9000
-  accessKey: minioadmin
-  secretKey: minioadmin
+  url: http://192.168.118.130:9000
+  endpoint: http://192.168.118.130:9000
+  accessKey: minio@erenjaeger
+  secretKey: minio@erenjaeger
+  expiry: 1  #分片对象过期时间 单位（天）
+  breakpoint-time: 1 #断点续传有效时间，在redis存储任务的时间 单位（天）
   bucketName: ruoyi
 # MyBatis Plus配置
 mybatis-plus:

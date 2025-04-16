@@ -11,6 +11,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="duration"    column="duration"    />
         <result property="filePath"    column="file_path"    />
         <result property="fileUrl"    column="file_url"    />
+        <result property="fileMd5"    column="file_md5"    />
         <result property="status"    column="status"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
@@ -20,7 +21,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectMusicVo">
-        select music_id, title, artist, duration, file_path, file_url, status, create_by, create_time, update_by, update_time, remark from music
+        select music_id, title, artist, duration, file_path, file_url, file_md5,status, create_by, create_time, update_by, update_time, remark from music
     </sql>
 
     <select id="selectMusicList" parameterType="Music" resultMap="MusicResult">
@@ -58,6 +59,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="duration != null">duration,</if>
             <if test="filePath != null and filePath != ''">file_path,</if>
             <if test="fileUrl != null and fileUrl != ''">file_url,</if>
+            <if test="fileMd5 != null and fileMd5 != ''">file_md5,</if>
             <if test="status != null">status,</if>
             <if test="createBy != null">create_by,</if>
             <if test="createTime != null">create_time,</if>
@@ -71,6 +73,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="duration != null">#{duration},</if>
             <if test="filePath != null and filePath != ''">#{filePath},</if>
             <if test="fileUrl != null and fileUrl != ''">#{fileUrl},</if>
+            <if test="fileMd5 != null and fileMd5 != ''">#{fileMd5},</if>
             <if test="status != null">#{status},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>
@@ -88,6 +91,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="duration != null">duration = #{duration},</if>
             <if test="filePath != null and filePath != ''">file_path = #{filePath},</if>
             <if test="fileUrl != null and fileUrl != ''">file_url = #{fileUrl},</if>
+            <if test="fileMd5 != null and fileMd5 != ''">file_md5 = #{fileMd5},</if>
             <if test="status != null">status = #{status},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
             <if test="createTime != null">create_time = #{createTime},</if>

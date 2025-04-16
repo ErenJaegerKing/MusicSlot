@@ -43,7 +43,7 @@ public interface IMusicService {
      * @param music 音乐
      * @return 结果
      */
-    public int insertMusic(MultipartFile[] file);
+    public int insertMusic(Music music);
 
     /**
      * 修改音乐
@@ -68,4 +68,6 @@ public interface IMusicService {
      * @return 结果
      */
     public int deleteMusicByMusicId(Long musicId);
+
+    Boolean findByFileMd5(String md5);
 }

@@ -1,5 +1,7 @@
 package com.ruoyi.system.domain;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.ruoyi.common.core.domain.BaseEntity1;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.common.annotation.Excel;
@@ -11,7 +13,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
  * @author ruoyi
  * @date 2025-04-08
  */
-public class Music extends BaseEntity
+public class Music extends BaseEntity1
 {
     private static final long serialVersionUID = 1L;
 
@@ -30,13 +32,25 @@ public class Music extends BaseEntity
     @Excel(name = "时长(秒)")
     private Long duration;
 
-    /** 文件路径 */
+    /** 文件访问路径  长*/
     @Excel(name = "文件路径")
     private String filePath;
 
-    /** Minio路径 */
+    /** Minio存储路径  短*/
     @Excel(name = "Minio路径")
     private String fileUrl;
+
+    /** 文件MD5 */
+    @TableField("file_md5")
+    private String fileMd5;
+
+    public String getFileMd5() {
+        return fileMd5;
+    }
+
+    public void setFileMd5(String fileMd5) {
+        this.fileMd5 = fileMd5;
+    }
 
     /** 状态（0正常 1停用） */
     @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
@@ -119,11 +133,6 @@ public class Music extends BaseEntity
             .append("duration", getDuration())
             .append("filePath", getFilePath())
             .append("status", getStatus())
-            .append("createBy", getCreateBy())
-            .append("createTime", getCreateTime())
-            .append("updateBy", getUpdateBy())
-            .append("updateTime", getUpdateTime())
-            .append("remark", getRemark())
             .toString();
     }
 }

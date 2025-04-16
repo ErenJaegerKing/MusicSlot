@@ -37,26 +37,26 @@ public class CommonController
     /**
      * 自定义 Minio 服务器上传请求
      */
-    @PostMapping("/uploadMinio")
-    @ResponseBody
-    public AjaxResult uploadFileMinio(MultipartFile file) throws Exception
-    {
-        try
-        {
-            // 上传并返回新文件名称
-            String fileName = FileUploadUtils.uploadMinio(file);
-            AjaxResult ajax = AjaxResult.success();
-            ajax.put("url",fileName);
-            ajax.put("fileName",fileName);
-            ajax.put("newFileName", FileUtils.getName(fileName));
-            ajax.put("originalFilename", file.getOriginalFilename());
-            return ajax;
-        }
-        catch (Exception e)
-        {
-            return AjaxResult.error(e.getMessage());
-        }
-    }
+//    @PostMapping("/uploadMinio")
+//    @ResponseBody
+//    public AjaxResult uploadFileMinio(MultipartFile file) throws Exception
+//    {
+//        try
+//        {
+//            // 上传并返回新文件名称
+//            String fileName = FileUploadUtils.uploadMinio(file);
+//            AjaxResult ajax = AjaxResult.success();
+//            ajax.put("url",fileName);
+//            ajax.put("fileName",fileName);
+//            ajax.put("newFileName", FileUtils.getName(fileName));
+//            ajax.put("originalFilename", file.getOriginalFilename());
+//            return ajax;
+//        }
+//        catch (Exception e)
+//        {
+//            return AjaxResult.error(e.getMessage());
+//        }
+//    }
 
     /**
      * 通用下载请求
