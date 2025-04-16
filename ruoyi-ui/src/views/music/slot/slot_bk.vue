@@ -1,5 +1,37 @@
+
 <template>
   <div class="app-container">
+    <!--    <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">-->
+    <!--      <el-form-item label="开始时间" prop="startTime">-->
+    <!--        <el-date-picker clearable-->
+    <!--                        v-model="queryParams.startTime"-->
+    <!--                        type="date"-->
+    <!--                        value-format="yyyy-MM-dd"-->
+    <!--                        placeholder="请选择开始时间">-->
+    <!--        </el-date-picker>-->
+    <!--      </el-form-item>-->
+    <!--      <el-form-item label="结束时间" prop="endTime">-->
+    <!--        <el-date-picker clearable-->
+    <!--                        v-model="queryParams.endTime"-->
+    <!--                        type="date"-->
+    <!--                        value-format="yyyy-MM-dd"-->
+    <!--                        placeholder="请选择结束时间">-->
+    <!--        </el-date-picker>-->
+    <!--      </el-form-item>-->
+    <!--      <el-form-item label="时间段名称" prop="slotName">-->
+    <!--        <el-input-->
+    <!--          v-model="queryParams.slotName"-->
+    <!--          placeholder="请输入时间段名称"-->
+    <!--          clearable-->
+    <!--          @keyup.enter.native="handleQuery"-->
+    <!--        />-->
+    <!--      </el-form-item>-->
+    <!--      <el-form-item>-->
+    <!--        <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>-->
+    <!--        <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>-->
+    <!--      </el-form-item>-->
+    <!--    </el-form>-->
+
     <el-row :gutter="10" class="mb8">
       <el-col :span="1.5">
         <el-button
@@ -12,6 +44,18 @@
         >新增任务
         </el-button>
       </el-col>
+<!--      <el-col :span="1.5">-->
+<!--        <el-button-->
+<!--          type="success"-->
+<!--          plain-->
+<!--          icon="el-icon-edit"-->
+<!--          size="mini"-->
+<!--          :disabled="single"-->
+<!--          @click="handleUpdate"-->
+<!--          v-hasPermi="['system:slot:edit']"-->
+<!--        >修改任务-->
+<!--        </el-button>-->
+<!--      </el-col>-->
       <el-col :span="1.5">
         <el-button
           type="danger"
@@ -34,100 +78,20 @@
         >
         </el-switch>
       </el-col>
-      <el-button-group class="card-toggle-table" style="float: right; margin-right: 15px">
-        <el-tooltip
-          v-if="cardType"
-          class="item"
-          effect="dark"
-          content="切换成表格"
-          placement="top-start"
-        >
-          <el-button size="small" plain icon="el-icon-s-grid" @click="toggle"/>
-        </el-tooltip>
-        <el-tooltip
-          v-else
-          class="item"
-          effect="dark"
-          content="切换成卡片"
-          placement="top-start"
-        >
-          <el-button size="small" plain icon="el-icon-bank-card" @click="toggle"
-          />
-        </el-tooltip>
-      </el-button-group>
+      <!--      <el-col :span="1.5">-->
+      <!--        <el-button-->
+      <!--          type="warning"-->
+      <!--          plain-->
+      <!--          icon="el-icon-download"-->
+      <!--          size="mini"-->
+      <!--          @click="handleExport"-->
+      <!--          v-hasPermi="['system:slot:export']"-->
+      <!--        >导出</el-button>-->
+      <!--      </el-col>-->
+      <!--      <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>-->
     </el-row>
-    <!--    卡片风格-->
-    <el-row
-      :gutter="24"
-      v-if="cardType">
-      <el-col
-        v-for="(item,index) in slotList"
-        :key="item.slotId"
-        :span="6"
-      >
-        <el-card
-          class="card-style"
-          shadow="hover">
-          <div slot="header">
-            <i class="el-icon-set-up"/>
-            <span style="font-size: small; margin-left: 5px">{{ item.slotName }}</span>
-            <div
-              style="display: inline-block; float: right; cursor:pointer"
-              @click="handleUpdate(item)"
-            >
-              <el-tooltip effect="dark" content="编辑" placement="top">
-                <i class="el-icon-edit-outline" style="margin-left:10px"/>
-              </el-tooltip>
-            </div>
-          </div>
-          <div>
-            <div class="card-body-style">
-              <i class="el-icon-time" style="margin-right: 5px; color: orange;"/>
-              <span style="font-weight: 500; color: orange;">{{ item.startTime }}</span>
-              <span style="margin: 0 5px;">至</span>
-              <i class="el-icon-timer" style="margin-right: 5px; color: orange;"/>
-              <span style="font-weight: 500; color: orange;">{{ item.endTime }}</span>
-            </div>
-            <div class="card-body-style">
-              <el-tag
-                v-for="mode in item.weekdays.split(',')"
-                :key="mode"
-                style="margin-right: 5px"
-              >
-                {{ getWeekdaysName(mode) }}
-              </el-tag>
-            </div>
-            <div class="card-body-style">
-              <el-tag
-                v-for="mode in item.playMode"
-                :key="mode"
-                style="margin-right: 5px"
-              >
-                {{ getModeName(mode) }}
-              </el-tag>
-            </div>
-          </div>
-        </el-card>
-      </el-col>
-      <!-- 新增操作的空白卡片 -->
-      <el-col :span="6">
-        <el-card
-          class="card-style"
-          shadow="hover"
-        >
-          <div slot="header" style="text-align:center; cursor:pointer;" @click="handleAdd">
-            <i class="el-icon-circle-plus" style="color: #409EFF ; font-size: 110px"/>
-          </div>
-          <span style="font-size: medium; font-weight: bold; margin-top: 5px; display:block;">创建时间段</span>
-        </el-card>
-      </el-col>
-    </el-row>
-    <!--    列表风格-->
-    <el-table
-      v-else
-      v-loading="loading"
-      :data="slotList"
-      @selection-change="handleSelectionChange">
+
+    <el-table v-loading="loading" :data="slotList" @selection-change="handleSelectionChange">
       <el-table-column type="selection" width="55" align="center"/>
       <el-table-column label="时间段ID" align="center" prop="slotId"/>
       <el-table-column label="音乐任务" align="center" prop="slotName"/>
@@ -190,6 +154,7 @@
         </template>
       </el-table-column>
     </el-table>
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -197,6 +162,7 @@
       :limit.sync="queryParams.pageSize"
       @pagination="getList"
     />
+
     <!-- 添加或修改时间段对话框 -->
     <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" size="medium" label-width="100px">
@@ -234,7 +200,7 @@
         <el-form-item label="播放模式" prop="playMode">
           <el-radio-group v-model="form.playMode" size="medium">
             <el-radio v-for="(item, index) in playModeOptions" :key="index" :label="item.value"
-                      :disabled="item.disabled">{{ item.label }}
+                         :disabled="item.disabled">{{ item.label }}
             </el-radio>
           </el-radio-group>
         </el-form-item>
@@ -365,8 +331,6 @@ export default {
       musicStatus: true,
       // 音乐表格数据
       musicList: [],
-      // 默认为卡片风格，为false时切换成列表风格
-      cardType: true,
     };
   },
   created() {
@@ -374,10 +338,6 @@ export default {
     this.getTimeSlotStatus();
   },
   methods: {
-    // 点击切换风格
-    toggle() {
-      this.cardType = !this.cardType
-    },
     getModeName(mode) {
       const modeMap = {
         "1": "顺序",
@@ -414,7 +374,6 @@ export default {
         this.slotList = response.rows;
         this.total = response.total;
         this.loading = false;
-        console.log("slotList", response.rows);
       });
     },
     /** 查询音乐列表 */
@@ -481,8 +440,8 @@ export default {
       const slotId = row.slotId || this.ids
       getSlot(slotId).then(response => {
         this.form = response.data;
-        this.$set(this.form, 'weekdaysArray', this.form.weekdays.split(',').map(Number));
-        this.$set(this.form, 'musicIdsArray', this.form.musicIds.split(',').map(Number));
+        this.$set(this.form,'weekdaysArray',this.form.weekdays.split(',').map(Number));
+        this.$set(this.form,'musicIdsArray',this.form.musicIds.split(',').map(Number));
         this.open = true;
         this.title = "修改时间段";
         this.getMusicList();
@@ -537,17 +496,3 @@ export default {
   }
 };
 </script>
-<style scoped>
-.card-body-style {
-  margin-bottom: 5px;
-  padding: 2px;
-  font-size: 15px;
-}
-
-.card-style {
-  margin-bottom: 10px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-  min-height: 200px;
-}
-</style>
