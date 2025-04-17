@@ -100,6 +100,13 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
         // 关联时间段与定时任务
         timeSlot.setTaskId(scheduleSettingDTO.getId());
 
+        // 关联音乐表
+        List<Long> musicIds = timeSlot.getMusicIds();
+
+        for (Long id : musicIds) {
+
+        }
+
         return timeSlotMapper.insertTimeSlot(timeSlot);
     }
 

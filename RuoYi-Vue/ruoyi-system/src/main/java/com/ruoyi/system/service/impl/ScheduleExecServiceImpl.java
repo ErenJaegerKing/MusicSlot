@@ -50,11 +50,12 @@ public class ScheduleExecServiceImpl implements ScheduleExecService {
         // 根据taskId查询时间段
         TimeSlot timeSlot = iTimeSlotService.selectTimeSlotByTaskId(taskId);
         // 根据时间段查询相关歌单
-        Long[] musicIds = Arrays.stream(timeSlot.getMusicIds().split(","))
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .map(Long::valueOf)
-                .toArray(Long[]::new);
+        Long[] musicIds = null;
+//                Arrays.stream(timeSlot.getMusicIds().split(","))
+//                .map(String::trim)
+//                .filter(s -> !s.isEmpty())
+//                .map(Long::valueOf)
+//                .toArray(Long[]::new);
         List<Music> music = iMusicService.selectMusicByIds(musicIds);
         // 顺序还是乱序
         String playMode = timeSlot.getPlayMode();

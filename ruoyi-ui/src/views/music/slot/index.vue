@@ -59,67 +59,68 @@
     <!--    卡片风格-->
     <el-row
       :gutter="24"
-      v-if="cardType">
+      v-if="cardType"
+    >
       <el-col
         v-for="(item,index) in slotList"
         :key="item.slotId"
         :span="6"
       >
-        <el-card
-          class="card-style"
-          shadow="hover">
-          <div slot="header">
-            <i class="el-icon-set-up"/>
-            <span style="font-size: small; margin-left: 5px">{{ item.slotName }}</span>
-            <div
-              style="display: inline-block; float: right; cursor:pointer"
-              @click="handleUpdate(item)"
-            >
-              <el-tooltip effect="dark" content="编辑" placement="top">
-                <i class="el-icon-edit-outline" style="margin-left:10px"/>
-              </el-tooltip>
+        <div
+          style="cursor:pointer"
+          @click="handleUpdate(item)"
+        >
+          <el-card
+            class="card-style"
+            shadow="hover"
+            style="border: 1px solid #c0c4cc;"
+          >
+            <div slot="header">
+              <i class="el-icon-set-up"/>
+              <span style="font-size: small; margin-left: 5px">{{ item.slotName }}</span>
             </div>
-          </div>
-          <div>
-            <div class="card-body-style">
-              <i class="el-icon-time" style="margin-right: 5px; color: orange;"/>
-              <span style="font-weight: 500; color: orange;">{{ item.startTime }}</span>
-              <span style="margin: 0 5px;">至</span>
-              <i class="el-icon-timer" style="margin-right: 5px; color: orange;"/>
-              <span style="font-weight: 500; color: orange;">{{ item.endTime }}</span>
+            <div>
+              <div class="card-body-style">
+                <i class="el-icon-time" style="margin-right: 5px; color: orange;"/>
+                <span style="font-weight: 500; color: orange;">{{ item.startTime }}</span>
+                <span style="margin: 0 5px;">至</span>
+                <i class="el-icon-timer" style="margin-right: 5px; color: orange;"/>
+                <span style="font-weight: 500; color: orange;">{{ item.endTime }}</span>
+              </div>
+              <div class="card-body-style">
+                <el-tag
+                  v-for="mode in item.weekdays.split(',')"
+                  :key="mode"
+                  style="margin-right: 5px"
+                >
+                  {{ getWeekdaysName(mode) }}
+                </el-tag>
+              </div>
+              <div class="card-body-style">
+                <el-tag
+                  v-for="mode in item.playMode"
+                  :key="mode"
+                  style="margin-right: 5px"
+                >
+                  {{ getModeName(mode) }}
+                </el-tag>
+              </div>
             </div>
-            <div class="card-body-style">
-              <el-tag
-                v-for="mode in item.weekdays.split(',')"
-                :key="mode"
-                style="margin-right: 5px"
-              >
-                {{ getWeekdaysName(mode) }}
-              </el-tag>
-            </div>
-            <div class="card-body-style">
-              <el-tag
-                v-for="mode in item.playMode"
-                :key="mode"
-                style="margin-right: 5px"
-              >
-                {{ getModeName(mode) }}
-              </el-tag>
-            </div>
-          </div>
-        </el-card>
+          </el-card>
+        </div>
       </el-col>
       <!-- 新增操作的空白卡片 -->
       <el-col :span="6">
-        <el-card
-          class="card-style"
-          shadow="hover"
-        >
-          <div slot="header" style="text-align:center; cursor:pointer;" @click="handleAdd">
-            <i class="el-icon-circle-plus" style="color: #409EFF ; font-size: 110px"/>
-          </div>
-          <span style="font-size: medium; font-weight: bold; margin-top: 5px; display:block;">创建时间段</span>
-        </el-card>
+        <div style="cursor:pointer;" @click="handleAdd">
+          <el-card
+            class="card-style"
+            shadow="hover"
+            style="border: 1px solid #c0c4cc; display: flex; justify-content: center; align-items: center; height: 100%; "
+            @click="handleAdd"
+          >
+            <i class="el-icon-circle-plus-outline" style="color: #409EFF ; font-size: 110px"/>
+          </el-card>
+        </div>
       </el-col>
     </el-row>
     <!--    列表风格-->
@@ -127,7 +128,8 @@
       v-else
       v-loading="loading"
       :data="slotList"
-      @selection-change="handleSelectionChange">
+      @selection-change="handleSelectionChange"
+    >
       <el-table-column type="selection" width="55" align="center"/>
       <el-table-column label="时间段ID" align="center" prop="slotId"/>
       <el-table-column label="音乐任务" align="center" prop="slotName"/>
@@ -234,25 +236,29 @@
         <el-form-item label="播放模式" prop="playMode">
           <el-radio-group v-model="form.playMode" size="medium">
             <el-radio v-for="(item, index) in playModeOptions" :key="index" :label="item.value"
-                      :disabled="item.disabled">{{ item.label }}
+                      :disabled="item.disabled"
+            >{{ item.label }}
             </el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label-width="110px" label="每周播放日期" prop="weekdaysArray">
           <el-checkbox-group v-model="form.weekdaysArray" size="medium">
             <el-checkbox v-for="(item, index) in weekdaysOptions" :key="index" :label="item.value"
-                         :disabled="item.disabled">{{ item.label }}
+                         :disabled="item.disabled"
+            >{{ item.label }}
             </el-checkbox>
           </el-checkbox-group>
         </el-form-item>
-        <el-form-item label="音乐曲目" prop="musicIdsArray">
-          <el-select style="width: 660px" v-model="form.musicIdsArray" multiple filterable
-                     placeholder="请选择要播放的音乐">
+        <el-form-item label="音乐曲目" prop="musicIds">
+          <el-select style="width: 660px" v-model="form.musicIds" multiple filterable
+                     placeholder="请选择要播放的音乐"
+          >
             <el-option
               v-for="item in musicList"
               :key="item.value"
               :label="item.label"
-              :value="item.value">
+              :value="item.value"
+            >
             </el-option>
           </el-select>
         </el-form-item>
@@ -266,12 +272,12 @@
 </template>
 
 <script>
-import {listSlot, getSlot, delSlot, addSlot, updateSlot} from "@/api/music/slot";
-import {getTimeSlotEnabled, toggleTimeSlotEnabled} from "@/api/system/config";
-import {listMusic} from "@/api/music/music";
+import { listSlot, getSlot, delSlot, addSlot, updateSlot } from '@/api/music/slot'
+import { getTimeSlotEnabled, toggleTimeSlotEnabled } from '@/api/system/config'
+import { listMusic } from '@/api/music/music'
 
 export default {
-  name: "TimeSlot",
+  name: 'TimeSlot',
   data() {
     return {
       // 遮罩层
@@ -289,7 +295,7 @@ export default {
       // 时间段表格数据
       slotList: [],
       // 弹出层标题
-      title: "",
+      title: '',
       // 是否显示弹出层
       open: false,
       // 查询参数
@@ -299,7 +305,7 @@ export default {
         startTime: null,
         endTime: null,
         slotName: null,
-        status: null,
+        status: null
       },
       // 表单参数
       form: {},
@@ -311,10 +317,10 @@ export default {
           trigger: 'blur'
         }],
         startTime: [
-          {required: true, message: "开始时间不能为空", trigger: "blur"}
+          { required: true, message: '开始时间不能为空', trigger: 'blur' }
         ],
         endTime: [
-          {required: true, message: "结束时间不能为空", trigger: "blur"}
+          { required: true, message: '结束时间不能为空', trigger: 'blur' }
         ],
         playMode: [{
           required: true,
@@ -323,55 +329,55 @@ export default {
         }],
         weekdaysArray: [{
           required: true,
-          message: '请至少选择一个播放模式',
-          trigger: 'blur'
-        }],
-        musicIdsArray: [{
-          required: true,
           message: '请至少选择一个星期',
           trigger: 'blur'
         }],
+        musicIds: [{
+          required: true,
+          message: '请至少选择一首音乐',
+          trigger: 'blur'
+        }]
       },
       playModeOptions: [{
-        "label": "顺序播放",
-        "value": "1"
+        'label': '顺序播放',
+        'value': '1'
       }, {
-        "label": "乱序播放",
-        "value": "2"
+        'label': '乱序播放',
+        'value': '2'
       }],
       weekdaysOptions: [{
-        "label": "星期一",
-        "value": 1
+        'label': '星期一',
+        'value': 1
       }, {
-        "label": "星期二",
-        "value": 2
+        'label': '星期二',
+        'value': 2
       }, {
-        "label": "星期三",
-        "value": 3
+        'label': '星期三',
+        'value': 3
       }, {
-        "label": "星期四",
-        "value": 4
+        'label': '星期四',
+        'value': 4
       }, {
-        "label": "星期五",
-        "value": 5
+        'label': '星期五',
+        'value': 5
       }, {
-        "label": "星期六",
-        "value": 6
+        'label': '星期六',
+        'value': 6
       }, {
-        "label": "星期天",
-        "value": 7
+        'label': '星期天',
+        'value': 7
       }],
       // 定时任务总开关
       musicStatus: true,
       // 音乐表格数据
       musicList: [],
       // 默认为卡片风格，为false时切换成列表风格
-      cardType: true,
-    };
+      cardType: true
+    }
   },
   created() {
-    this.getList();
-    this.getTimeSlotStatus();
+    this.getList()
+    this.getTimeSlotStatus()
   },
   methods: {
     // 点击切换风格
@@ -380,42 +386,42 @@ export default {
     },
     getModeName(mode) {
       const modeMap = {
-        "1": "顺序",
-        "2": "乱序",
-      };
+        '1': '顺序',
+        '2': '乱序'
+      }
       return modeMap[mode] || mode
     },
     getWeekdaysName(weekdays) {
       const weekdaysMap = {
-        "1": "星期一",
-        "2": "星期二",
-        "3": "星期三",
-        "4": "星期四",
-        "5": "星期五",
-        "6": "星期六",
-        "7": "星期天"
+        '1': '星期一',
+        '2': '星期二',
+        '3': '星期三',
+        '4': '星期四',
+        '5': '星期五',
+        '6': '星期六',
+        '7': '星期天'
       }
       return weekdaysMap[weekdays] || weekdays
     },
     /** 查询时间段状态 */
     getTimeSlotStatus() {
       getTimeSlotEnabled().then(response => {
-        this.musicStatus = !!response;
+        this.musicStatus = !!response
       })
     },
     /** 修改时间段状态 */
     handleTimeSlotStatusChange() {
-      toggleTimeSlotEnabled();
+      toggleTimeSlotEnabled()
     },
     /** 查询时间段列表 */
     getList() {
-      this.loading = true;
+      this.loading = true
       listSlot(this.queryParams).then(response => {
-        this.slotList = response.rows;
-        this.total = response.total;
-        this.loading = false;
-        console.log("slotList", response.rows);
-      });
+        this.slotList = response.rows
+        this.total = response.total
+        this.loading = false
+        console.log('slotList', response.rows)
+      })
     },
     /** 查询音乐列表 */
     getMusicList() {
@@ -423,14 +429,14 @@ export default {
         this.musicList = response.rows.map(item => ({
           // label: `${item.title} - ${item.artist}`,
           label: `${item.title}`,
-          value: item.musicId,
-        }));
-      });
+          value: item.musicId
+        }))
+      })
     },
     // 取消按钮
     cancel() {
-      this.open = false;
-      this.reset();
+      this.open = false
+      this.reset()
     },
     // 表单重置
     reset() {
@@ -440,28 +446,29 @@ export default {
         startTime: null,
         endTime: null,
         weekdaysArray: [],
-        musicIdsArray: [],
+        // musicIdsArray: [],
         playMode: null,
         weekdays: null,
-        musicIds: null,
+        // musicIds: null,
+        musicIds: [],
         status: null,
         createBy: null,
         createTime: null,
         updateBy: null,
         updateTime: null,
-        remark: null,
-      };
-      this.resetForm("form");
+        remark: null
+      }
+      this.resetForm('form')
     },
     /** 搜索按钮操作 */
     handleQuery() {
-      this.queryParams.pageNum = 1;
-      this.getList();
+      this.queryParams.pageNum = 1
+      this.getList()
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.resetForm("queryForm");
-      this.handleQuery();
+      this.resetForm('queryForm')
+      this.handleQuery()
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
@@ -471,63 +478,63 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.reset();
-      this.open = true;
-      this.title = "添加时间段";
-      this.getMusicList();
+      this.reset()
+      this.open = true
+      this.title = '添加时间段'
+      this.getMusicList()
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.reset();
+      this.reset()
       const slotId = row.slotId || this.ids
       getSlot(slotId).then(response => {
-        this.form = response.data;
-        this.$set(this.form, 'weekdaysArray', this.form.weekdays.split(',').map(Number));
-        this.$set(this.form, 'musicIdsArray', this.form.musicIds.split(',').map(Number));
-        this.open = true;
-        this.title = "修改时间段";
-        this.getMusicList();
-      });
+        this.form = response.data
+        this.$set(this.form, 'weekdaysArray', this.form.weekdays.split(',').map(Number))
+        this.$set(this.form, 'musicIdsArray', this.form.musicIds.split(',').map(Number))
+        this.open = true
+        this.title = '修改时间段'
+        this.getMusicList()
+      })
     },
 
     /** 提交按钮 */
     submitForm() {
       console.log(this.form)
       // 创建新数组排序（不影响原数组）
-      this.form.weekdays = [...this.form.weekdaysArray].sort().join(",")
-      this.form.musicIds = this.form.musicIdsArray.join(",");
+      this.form.weekdays = [...this.form.weekdaysArray].sort().join(',')
+      // this.form.musicIds = this.form.musicIdsArray.join(',')
       if (this.form.startTime > this.form.endTime) {
-        this.$message.warning("开始时间不能大于结束时间")
+        this.$message.warning('开始时间不能大于结束时间')
       } else {
-        this.$refs["form"].validate(valid => {
+        this.$refs['form'].validate(valid => {
           if (valid) {
             if (this.form.slotId != null) {
               updateSlot(this.form).then(response => {
-                this.$modal.msgSuccess("修改成功");
-                this.open = false;
-                this.getList();
-              });
+                this.$modal.msgSuccess('修改成功')
+                this.open = false
+                this.getList()
+              })
             } else {
               addSlot(this.form).then(response => {
-                this.$modal.msgSuccess("新增成功");
-                this.open = false;
-                this.getList();
-              });
+                this.$modal.msgSuccess('新增成功')
+                this.open = false
+                this.getList()
+              })
             }
           }
-        });
+        })
       }
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const slotIds = row.slotId || this.ids;
-      this.$modal.confirm('是否确认删除时间段编号为"' + slotIds + '"的数据项？').then(function () {
-        return delSlot(slotIds);
+      const slotIds = row.slotId || this.ids
+      this.$modal.confirm('是否确认删除时间段编号为"' + slotIds + '"的数据项？').then(function() {
+        return delSlot(slotIds)
       }).then(() => {
-        this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.getList()
+        this.$modal.msgSuccess('删除成功')
       }).catch(() => {
-      });
+      })
     },
     /** 导出按钮操作 */
     handleExport() {
@@ -536,7 +543,7 @@ export default {
       }, `slot_${new Date().getTime()}.xlsx`)
     }
   }
-};
+}
 </script>
 <style scoped>
 .card-body-style {

@@ -4,6 +4,7 @@ import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
@@ -57,16 +58,26 @@ public class TimeSlot extends BaseEntity {
     private String weekdays;
 
     /**
-     * 音乐Ids
-     */
-    @Excel(name = "音乐Ids")
-    private String musicIds;
-
-    /**
      * 状态（0正常 1停用）
      */
     @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
     private String status;
+
+    /**
+     * 音乐Ids 前端传来Ids 不序列化
+     */
+    @Excel(name = "音乐Ids")
+    @TableField(exist = false)
+    private List<Long> musicIds;
+
+
+    public List<Long> getMusicIds() {
+        return musicIds;
+    }
+
+    public void setMusicIds(List<Long> musicIds) {
+        this.musicIds = musicIds;
+    }
 
     /**
      * 任务Id
@@ -81,13 +92,7 @@ public class TimeSlot extends BaseEntity {
         this.taskId = taskId;
     }
 
-    public String getMusicIds() {
-        return musicIds;
-    }
 
-    public void setMusicIds(String musicIds) {
-        this.musicIds = musicIds;
-    }
 
     public LocalTime getStartTime() {
         return startTime;
