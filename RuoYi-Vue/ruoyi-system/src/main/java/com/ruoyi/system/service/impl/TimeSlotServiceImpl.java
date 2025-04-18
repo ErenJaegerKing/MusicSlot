@@ -1,11 +1,15 @@
 package com.ruoyi.system.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.common.constant.TimeSlotConstants;
 import com.ruoyi.common.utils.CronUtil;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.system.domain.TimeSlot;
+import com.ruoyi.system.domain.TimeSlotMusic;
 import com.ruoyi.system.domain.dto.ScheduleSettingDTO;
+import com.ruoyi.system.mapper.ScheduleSettingMapper;
 import com.ruoyi.system.mapper.TimeSlotMapper;
+import com.ruoyi.system.mapper.TimeSlotMusicMapper;
 import com.ruoyi.system.service.ISysConfigService;
 import com.ruoyi.system.service.ITimeSlotService;
 import com.ruoyi.system.service.ScheduleExecService;
@@ -16,6 +20,7 @@ import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * 时间段Service业务层处理
@@ -34,6 +39,11 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
     @Autowired
     private ScheduleExecService scheduleExecService;
 
+    @Autowired
+    private TimeSlotMusicMapper timeSlotMusicMapper;
+
+    @Autowired
+    private ScheduleSettingMapper scheduleSettingMapper;
     /**
      * 查询时间段
      *
@@ -100,14 +110,18 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
         // 关联时间段与定时任务
         timeSlot.setTaskId(scheduleSettingDTO.getId());
 
+        // 插入时间段，获得自增Id
+        timeSlotMapper.insertTimeSlot(timeSlot);
         // 关联音乐表
-        List<Long> musicIds = timeSlot.getMusicIds();
-
-        for (Long id : musicIds) {
-
-        }
-
-        return timeSlotMapper.insertTimeSlot(timeSlot);
+        List<TimeSlotMusic> collects = timeSlot.getMusicIds().stream()
+                .map(musicId -> {
+                    TimeSlotMusic timeSlotMusic = new TimeSlotMusic();
+                    timeSlotMusic.setMusicId(musicId);
+                    timeSlotMusic.setSlotId(timeSlot.getSlotId());
+                    return timeSlotMusic;
+                })
+                .collect(Collectors.toList());
+        return timeSlotMusicMapper.batchInsert(collects);
     }
 
     /**
@@ -119,11 +133,50 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
     @Override
     public int updateTimeSlot(TimeSlot timeSlot) {
         timeSlot.setUpdateTime(DateUtils.getNowDate());
+        // 定时任务
+            // 停止定时任务
+        ScheduleSettingDTO scheduleSettingDTO1 = new ScheduleSettingDTO();
+        scheduleSettingDTO1.setId(timeSlot.getTaskId());
+        try {
+            scheduleExecService.stop(scheduleSettingDTO1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+            // 生成cron表达式
+        LocalTime startTime = timeSlot.getStartTime();
+        String cron = CronUtil.getCustomWeekDayHourMinuteCron(timeSlot.getWeekdays(),
+                String.format("%d", startTime.getHour()),
+                String.format("%d", startTime.getMinute()));
+            // 添加定时任务
+        ScheduleSettingDTO scheduleSettingDTO = new ScheduleSettingDTO();
+        scheduleSettingDTO.setId(UUID.randomUUID().toString());
+        scheduleSettingDTO.setJobId(UUID.randomUUID().toString());
+        scheduleSettingDTO.setCronExpression(cron);
+        scheduleExecService.add(scheduleSettingDTO);
+            // 关联时间段与定时任务
+        timeSlot.setTaskId(scheduleSettingDTO.getId());
+
+        // 歌单
+            // 删除所有关联表
+        LambdaQueryWrapper<TimeSlotMusic> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TimeSlotMusic::getSlotId,timeSlot.getSlotId());
+        timeSlotMusicMapper.delete(wrapper);
+            // 批量插入关联表
+        List<TimeSlotMusic> collect = timeSlot.getMusicIds().stream()
+                .map(musicId -> {
+                    TimeSlotMusic timeSlotMusic = new TimeSlotMusic();
+                    timeSlotMusic.setMusicId(musicId);
+                    timeSlotMusic.setSlotId(timeSlot.getSlotId());
+                    return timeSlotMusic;
+                })
+                .collect(Collectors.toList());
+        timeSlotMusicMapper.batchInsert(collect);
+
         return timeSlotMapper.updateTimeSlot(timeSlot);
     }
 
     /**
-     * 删除时间段信息
+     * 删除时间段信息（没用到这个）
      *
      * @param slotId 时间段主键
      * @return 结果
@@ -132,15 +185,19 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
     public int deleteTimeSlotBySlotId(Long slotId) {
         // 查询时间段获得任务Id
         TimeSlot timeSlot = timeSlotMapper.selectTimeSlotBySlotId(slotId);
-        String taskId = timeSlot.getTaskId();
         // 停止定时任务
         ScheduleSettingDTO scheduleSettingDTO = new ScheduleSettingDTO();
-        scheduleSettingDTO.setId(taskId);
+        scheduleSettingDTO.setId(timeSlot.getTaskId());
         try {
             scheduleExecService.stop(scheduleSettingDTO);
         } catch (Exception e) {
             e.printStackTrace();
         }
+        // 批量删除关联表
+        LambdaQueryWrapper<TimeSlotMusic> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TimeSlotMusic::getSlotId, slotId);
+        timeSlotMusicMapper.delete(wrapper);
+
         return timeSlotMapper.deleteTimeSlotBySlotId(slotId);
     }
 
@@ -152,19 +209,23 @@ public class TimeSlotServiceImpl implements ITimeSlotService {
      */
     @Override
     public int deleteTimeSlotBySlotIds(Long[] slotIds) {
+        // 查询时间段获得任务Id
         List<TimeSlot> timeSlots = timeSlotMapper.selectTimeSlotBySlotIds(slotIds);
         for (TimeSlot timeSlot : timeSlots) {
-            // 查询时间段获得任务Id
-            String taskId = timeSlot.getTaskId();
             // 停止定时任务
             ScheduleSettingDTO scheduleSettingDTO = new ScheduleSettingDTO();
-            scheduleSettingDTO.setId(taskId);
+            scheduleSettingDTO.setId(timeSlot.getTaskId());
             try {
                 scheduleExecService.stop(scheduleSettingDTO);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
+        // 删除关联表
+        LambdaQueryWrapper<TimeSlotMusic> wrapper = new LambdaQueryWrapper<>();
+        wrapper.in(TimeSlotMusic::getSlotId, slotIds);
+        timeSlotMusicMapper.delete(wrapper);
+
         return timeSlotMapper.deleteTimeSlotBySlotIds(slotIds);
     }
 

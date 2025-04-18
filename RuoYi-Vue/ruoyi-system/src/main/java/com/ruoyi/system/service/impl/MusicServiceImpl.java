@@ -1,13 +1,20 @@
 package com.ruoyi.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.ruoyi.common.exception.ServiceException;
+import com.ruoyi.common.exception.base.BaseException;
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.Music;
+import com.ruoyi.system.domain.TimeSlotMusic;
 import com.ruoyi.system.mapper.MusicMapper;
+import com.ruoyi.system.mapper.TimeSlotMusicMapper;
 import com.ruoyi.system.service.IMusicService;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -20,6 +27,9 @@ import java.util.List;
 public class MusicServiceImpl implements IMusicService {
     @Autowired
     private MusicMapper musicMapper;
+
+    @Autowired
+    private TimeSlotMusicMapper timeSlotMusicMapper;
 
     /**
      * 查询音乐
@@ -73,7 +83,6 @@ public class MusicServiceImpl implements IMusicService {
      */
     @Override
     public int updateMusic(MultipartFile file, Music music) {
-        // TODO 配合分片上传
         return musicMapper.updateMusic(music);
     }
 
@@ -85,6 +94,14 @@ public class MusicServiceImpl implements IMusicService {
      */
     @Override
     public int deleteMusicByMusicIds(Long[] musicIds) {
+        // 检验是否有时间段关联
+        boolean exists = timeSlotMusicMapper.exists(
+                new LambdaQueryWrapper<TimeSlotMusic>()
+                        .in(TimeSlotMusic::getMusicId, Arrays.asList(musicIds))
+        );
+        if (exists) {
+            throw new ServiceException("时间段关联，无法删除",500);
+        }
         return musicMapper.deleteMusicByMusicIds(musicIds);
     }
 

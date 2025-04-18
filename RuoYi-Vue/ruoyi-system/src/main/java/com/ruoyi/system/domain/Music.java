@@ -21,19 +21,31 @@ public class Music extends BaseEntity1
     private Long musicId;
 
     /** 歌曲名称 */
-    @Excel(name = "歌曲名称")
+    @Excel(name = " 歌曲名称")
     private String title;
 
     /** 歌手 */
     @Excel(name = "歌手")
     private String artist;
 
+    /** 专辑 */
+    @Excel(name = "专辑")
+    private String album;
+
     /** 时长(秒) */
     @Excel(name = "时长(秒)")
     private Long duration;
 
+    /** 图片路径 */
+    @TableField("image_path")
+    private String imagePath;
+
+    /** 图片URL */
+    @TableField("image_url")
+    private String imageUrl;
+
     /** 文件访问路径  长*/
-    @Excel(name = "文件路径")
+    @TableField("file_path")
     private String filePath;
 
     /** Minio存储路径  短*/
@@ -44,6 +56,35 @@ public class Music extends BaseEntity1
     @TableField("file_md5")
     private String fileMd5;
 
+    /** 状态（0正常 1停用） */
+    @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
+    private String status;
+
+    public String getAlbum() {
+        return album;
+    }
+
+    public void setAlbum(String album) {
+        this.album = album;
+    }
+
+    public String getImagePath() {
+        return imagePath;
+    }
+
+    public void setImagePath(String imagePath) {
+        this.imagePath = imagePath;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+
     public String getFileMd5() {
         return fileMd5;
     }
@@ -51,10 +92,6 @@ public class Music extends BaseEntity1
     public void setFileMd5(String fileMd5) {
         this.fileMd5 = fileMd5;
     }
-
-    /** 状态（0正常 1停用） */
-    @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
-    private String status;
 
     public String getFileUrl() {
         return fileUrl;
@@ -64,14 +101,15 @@ public class Music extends BaseEntity1
         this.fileUrl = fileUrl;
     }
     
-    public void setMusicId(Long musicId) 
-    {
-        this.musicId = musicId;
-    }
 
     public Long getMusicId() 
     {
         return musicId;
+    }
+
+    public void setMusicId(Long musicId)
+    {
+        this.musicId = musicId;
     }
 
     public void setTitle(String title) 

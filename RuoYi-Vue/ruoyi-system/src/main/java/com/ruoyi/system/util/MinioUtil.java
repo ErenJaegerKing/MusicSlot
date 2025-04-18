@@ -7,6 +7,7 @@ import com.ruoyi.common.config.CustomMinioClient;
 import com.ruoyi.common.core.domain.R1;
 import com.ruoyi.common.enums.RespEnum;
 import com.ruoyi.common.utils.ServletUtils;
+import com.ruoyi.common.utils.ip.IpUtils;
 import com.ruoyi.common.utils.spring.SpringUtils;
 import com.ruoyi.system.domain.vo.FileUploadInfo;
 import io.minio.*;
@@ -59,10 +60,10 @@ public class MinioUtil {
     @Value(value = "${minio.endpoint}")
     private String endpoint;
 
-    @Value(value = "${minio.accesskey}")
+    @Value(value = "${minio.accessKey}")
     private String accesskey;
 
-    @Value(value = "${minio.secretkey}")
+    @Value(value = "${minio.secretKey}")
     private String secretkey;
 
     @Value(value = "${minio.expiry}")
@@ -77,6 +78,11 @@ public class MinioUtil {
      */
     @PostConstruct
     public void init() {
+        if (StringUtils.isEmpty(endpoint) ||
+                StringUtils.isEmpty(accesskey) ||
+                StringUtils.isEmpty(secretkey)) {
+            throw new IllegalStateException("MinIO配置不完整");
+        }
         MinioClient minioClient = MinioClient.builder()
                 .endpoint(endpoint)
                 .credentials(accesskey, secretkey)
@@ -184,6 +190,12 @@ public class MinioUtil {
                             .expiry(expiry, TimeUnit.DAYS)
                             .build());
             log.info("tip message: 单个文件上传、成功");
+            // 上传后端返回的地址的问题
+            log.info("客户端IP{}，本机IP{}", IpUtils.getIpAddr(), IpUtils.getHostIp());
+//            if (!"127.0.0.1".equals(IpUtils.getIpAddr())) {
+//                url = url.replace("http://localhost:9000", "http://" + IpUtils.getHostIp() + ":9000");
+//            }
+            url = url.replace("http://localhost:9000", "http://" + IpUtils.getHostIp() + ":9000");
             partList.add(url);
             resMap.put("uploadId", "SingleFileUpload");
             resMap.put("urlList", partList);
@@ -200,7 +212,7 @@ public class MinioUtil {
      *
      * @param fileUploadInfo
      * @param objectName     文件全路径名称
-     * @param chunkNum      分片数量
+     * @param chunkNum       分片数量
      * @param contentType    类型，如果类型使用默认流会导致无法预览
      * @param bucketName     桶名称
      * @return Mono<Map < String, Object>>
@@ -218,9 +230,9 @@ public class MinioUtil {
 
             //获取uploadId
             String uploadId = null;
-            if(StringUtils.isBlank(fileUploadInfo.getUploadId())){
+            if (StringUtils.isBlank(fileUploadInfo.getUploadId())) {
                 uploadId = customMinioClient.initMultiPartUpload(bucketName, null, objectName, headers, null);
-            }else{
+            } else {
                 uploadId = fileUploadInfo.getUploadId();
             }
 
@@ -245,6 +257,17 @@ public class MinioUtil {
                                 .build());
                 partList.add(uploadUrl);
             }
+            // 上传后端返回的地址的问题
+//            if (!"127.0.0.1".equals(IpUtils.getIpAddr())) {
+//                String hostIp = IpUtils.getHostIp();
+//                partList = partList.stream().map(
+//                        url -> url.replace("http://localhost：", "http://" + hostIp + ":"))
+//                        .collect(Collectors.toList());
+//            }
+            String hostIp = IpUtils.getHostIp();
+            partList = partList.stream().map(
+                            url -> url.replace("http://localhost:9000", "http://" + hostIp + ":9000"))
+                    .collect(Collectors.toList());
             log.info("tip message: 文件初始化<分片上传>、成功");
             resMap.put("urlList", partList);
             return resMap;
@@ -276,7 +299,7 @@ public class MinioUtil {
                 partNumber++;
             }
             // 合并分片
-            customMinioClient.mergeMultipartUpload(bucketName, null,objectName, uploadId, parts, null, null);
+            customMinioClient.mergeMultipartUpload(bucketName, null, objectName, uploadId, parts, null, null);
 
         } catch (Exception e) {
             log.error("error message: 合并失败、原因:", e);

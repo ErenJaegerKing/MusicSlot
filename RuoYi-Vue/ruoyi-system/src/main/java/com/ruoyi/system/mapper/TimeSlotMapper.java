@@ -2,6 +2,7 @@ package com.ruoyi.system.mapper;
 
 import java.util.List;
 import com.ruoyi.system.domain.TimeSlot;
+import com.ruoyi.system.domain.TimeSlotMusic;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 

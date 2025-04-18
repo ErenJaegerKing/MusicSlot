@@ -64,12 +64,32 @@ public class TimeSlot extends BaseEntity {
     private String status;
 
     /**
-     * 音乐Ids 前端传来Ids 不序列化
+     * 任务Id
+     */
+    private String taskId;
+
+    /**
+     * 接收参数
+     * 音乐Ids 不持久化
      */
     @Excel(name = "音乐Ids")
     @TableField(exist = false)
     private List<Long> musicIds;
 
+    /*
+    * 查询参数
+    * 音乐集合 不持久化
+    */
+    @TableField(exist = false)
+    private List<Music> musicList;
+
+    public List<Music> getMusicList() {
+        return musicList;
+    }
+
+    public void setMusicList(List<Music> musicList) {
+        this.musicList = musicList;
+    }
 
     public List<Long> getMusicIds() {
         return musicIds;
@@ -79,10 +99,6 @@ public class TimeSlot extends BaseEntity {
         this.musicIds = musicIds;
     }
 
-    /**
-     * 任务Id
-     */
-    private String taskId;
 
     public String getTaskId() {
         return taskId;

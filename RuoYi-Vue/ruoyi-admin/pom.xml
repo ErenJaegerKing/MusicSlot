@@ -61,6 +61,14 @@
             <artifactId>ruoyi-generator</artifactId>
         </dependency>
 
+        <!-- 测试工具 Junit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.11</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

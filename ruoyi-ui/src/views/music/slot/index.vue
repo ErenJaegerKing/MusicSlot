@@ -264,7 +264,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" @click="submitForm" :loading="btnLoading">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -282,6 +282,8 @@ export default {
     return {
       // 遮罩层
       loading: true,
+      // 按钮加载
+      btnLoading: false,
       // 选中数组
       ids: [],
       // 非单个禁用
@@ -490,7 +492,7 @@ export default {
       getSlot(slotId).then(response => {
         this.form = response.data
         this.$set(this.form, 'weekdaysArray', this.form.weekdays.split(',').map(Number))
-        this.$set(this.form, 'musicIdsArray', this.form.musicIds.split(',').map(Number))
+        this.form.musicIds = this.form.musicList.map(music => music.musicId)
         this.open = true
         this.title = '修改时间段'
         this.getMusicList()
@@ -499,10 +501,9 @@ export default {
 
     /** 提交按钮 */
     submitForm() {
-      console.log(this.form)
+      this.btnLoading = true
       // 创建新数组排序（不影响原数组）
       this.form.weekdays = [...this.form.weekdaysArray].sort().join(',')
-      // this.form.musicIds = this.form.musicIdsArray.join(',')
       if (this.form.startTime > this.form.endTime) {
         this.$message.warning('开始时间不能大于结束时间')
       } else {
@@ -513,12 +514,16 @@ export default {
                 this.$modal.msgSuccess('修改成功')
                 this.open = false
                 this.getList()
+              }).finally(_ => {
+                this.btnLoading = false
               })
             } else {
               addSlot(this.form).then(response => {
                 this.$modal.msgSuccess('新增成功')
                 this.open = false
                 this.getList()
+              }).finally(_ => {
+                this.btnLoading = false;
               })
             }
           }
@@ -556,6 +561,6 @@ export default {
   margin-bottom: 10px;
   border-radius: 8px;
   transition: all 0.3s ease;
-  min-height: 200px;
+  min-height: 240px;
 }
 </style>

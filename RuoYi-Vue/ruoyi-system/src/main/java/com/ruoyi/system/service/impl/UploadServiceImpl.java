@@ -2,8 +2,6 @@ package com.ruoyi.system.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.common.core.domain.AjaxResult;
-import com.ruoyi.common.core.domain.R;
-import com.ruoyi.common.core.domain.R1;
 import com.ruoyi.common.core.redis.RedisCache;
 import com.ruoyi.common.enums.RespEnum;
 import com.ruoyi.system.domain.Files;
@@ -71,8 +69,7 @@ public class UploadServiceImpl implements UploadService {
         }
         log.info("tip message: 通过 <{}> 查询mysql是否存在", md5);
         // 查询数据库是否上传成功
-        Files one = filesMapper.selectOne(
-                new LambdaQueryWrapper<Files>().eq(Files::getFileMd5, md5));
+        Files one = filesMapper.selectOne(new LambdaQueryWrapper<Files>().eq(Files::getFileMd5, md5));
         if (one != null) {
             r.put("code1", RespEnum.UPLOADSUCCESSFUL.getCode());
             r.put("msg", RespEnum.UPLOADSUCCESSFUL.getMessage());
@@ -92,7 +89,6 @@ public class UploadServiceImpl implements UploadService {
                     musicService.insertMusic(music);
                 }
             }
-
 
             return r;
         }

@@ -8,7 +8,7 @@ import com.ruoyi.common.annotation.Excel;
  * @author x
  * @date 2025-04-17
  */
-public class SlotMusic
+public class TimeSlotMusic
 {
     private static final long serialVersionUID = 1L;
 
@@ -19,6 +19,13 @@ public class SlotMusic
     /** 音乐ID */
     @Excel(name = "音乐ID")
     private Long musicId;
+
+    public TimeSlotMusic(Long slotId, Long musicId) {
+    }
+
+    public TimeSlotMusic() {
+
+    }
 
     public void setSlotId(Long slotId)
     {

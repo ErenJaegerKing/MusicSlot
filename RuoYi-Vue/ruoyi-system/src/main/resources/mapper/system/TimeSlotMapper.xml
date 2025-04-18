@@ -37,8 +37,53 @@
         from time_slot
     </sql>
 
-    <select id="selectTimeSlotList" parameterType="TimeSlot" resultMap="TimeSlotResult">
-        <include refid="selectTimeSlotVo"/>
+    <resultMap id="TimeSlotWithMusicResult" type="TimeSlot">
+        <result property="slotId" column="slot_id"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="slotName" column="slot_name"/>
+        <result property="playMode" column="play_mode"/>
+        <result property="weekdays" column="weekdays"/>
+        <result property="status" column="status"/>
+        <result property="taskId" column="task_id"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+        <collection property="musicList" ofType="Music">
+            <result property="musicId" column="music_id"/>
+            <result property="title" column="title"/>
+            <result property="artist" column="artist"/>
+            <result property="album" column="album"/>
+            <result property="duration" column="duration"/>
+            <result property="imagePath" column="image_path"/>
+            <result property="imageUrl" column="image_url"/>
+            <result property="filePath" column="file_path"/>
+            <result property="fileUrl" column="file_url"/>
+            <result property="fileMd5" column="file_md5"/>
+            <result property="status" column="music_status"/>
+            <result property="createBy" column="create_by"/>
+            <result property="createTime" column="create_time"/>
+            <result property="updateBy" column="update_by"/>
+            <result property="updateTime" column="update_time"/>
+            <result property="remark" column="remark"/>
+        </collection>
+    </resultMap>
+
+    <select id="selectTimeSlotList" parameterType="TimeSlot" resultMap="TimeSlotWithMusicResult">
+        SELECT
+            ts.slot_id, ts.slot_name, ts.start_time, ts.end_time,
+            ts.play_mode, ts.weekdays, ts.status, ts.task_id,
+            m.music_id, m.title, m.artist, m.album, m.duration,
+            m.image_path, m.image_url, m.file_path, m.file_url,
+            m.file_md5, m.status AS music_status
+        FROM
+            time_slot ts
+        LEFT JOIN
+            time_slot_music tsm ON ts.slot_id = tsm.slot_id
+        LEFT JOIN
+            music m ON tsm.music_id = m.music_id
         <where>
             <if test="startTime != null ">and start_time = #{startTime}</if>
             <if test="endTime != null ">and end_time = #{endTime}</if>
@@ -51,9 +96,20 @@
         <include refid="selectTimeSlotVo"/>
     </select>
     
-    <select id="selectTimeSlotBySlotId" parameterType="Long" resultMap="TimeSlotResult">
-        <include refid="selectTimeSlotVo"/>
-        where slot_id = #{slotId}
+    <select id="selectTimeSlotBySlotId" parameterType="Long" resultMap="TimeSlotWithMusicResult">
+        SELECT
+            ts.slot_id, ts.slot_name, ts.start_time, ts.end_time,
+            ts.play_mode, ts.weekdays, ts.status, ts.task_id,
+            m.music_id, m.title, m.artist, m.album, m.duration,
+            m.image_path, m.image_url, m.file_path, m.file_url,
+            m.file_md5, m.status AS music_status
+        FROM
+            time_slot ts
+                LEFT JOIN
+            time_slot_music tsm ON ts.slot_id = tsm.slot_id
+                LEFT JOIN
+            music m ON tsm.music_id = m.music_id
+        where ts.slot_id = #{slotId}
     </select>
 
     <select id="selectTimeSlotByTaskId" parameterType="String" resultMap="TimeSlotResult">
