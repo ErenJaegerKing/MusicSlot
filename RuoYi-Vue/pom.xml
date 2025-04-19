@@ -230,7 +230,6 @@
         <module>ruoyi-common</module>
     </modules>
     <packaging>pom</packaging>
-
     <build>
         <plugins>
             <plugin>

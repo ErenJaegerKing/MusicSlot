@@ -195,7 +195,7 @@ public class MinioUtil {
 //            if (!"127.0.0.1".equals(IpUtils.getIpAddr())) {
 //                url = url.replace("http://localhost:9000", "http://" + IpUtils.getHostIp() + ":9000");
 //            }
-            url = url.replace("http://localhost:9000", "http://" + IpUtils.getHostIp() + ":9000");
+//            url = url.replace("http://localhost:9000", "http://" + IpUtils.getHostIp() + ":9000");
             partList.add(url);
             resMap.put("uploadId", "SingleFileUpload");
             resMap.put("urlList", partList);
@@ -264,10 +264,10 @@ public class MinioUtil {
 //                        url -> url.replace("http://localhost：", "http://" + hostIp + ":"))
 //                        .collect(Collectors.toList());
 //            }
-            String hostIp = IpUtils.getHostIp();
-            partList = partList.stream().map(
-                            url -> url.replace("http://localhost:9000", "http://" + hostIp + ":9000"))
-                    .collect(Collectors.toList());
+//            String hostIp = IpUtils.getHostIp();
+//            partList = partList.stream().map(
+//                            url -> url.replace("http://localhost:9000", "http://" + hostIp + ":9000"))
+//                    .collect(Collectors.toList());
             log.info("tip message: 文件初始化<分片上传>、成功");
             resMap.put("urlList", partList);
             return resMap;

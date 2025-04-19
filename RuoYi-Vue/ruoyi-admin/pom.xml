@@ -70,8 +70,35 @@
         </dependency>
 
     </dependencies>
+    <!-- 配置maven占位符-->
+    <profiles>
+        <!-- 配置需要切换的环境 -->
+        <profile>
+            <id>dev</id>
+            <!-- properties下的每个子标签我们可以理解为一个配置 -->
+            <properties>
+                <!--  标签名为自定义，和我们平时写properties一样，同样我们也可以定义一个或多个(key, value)配置-->
+                <spring.profiles.active>dev</spring.profiles.active>
+            </properties>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <spring.profiles.active>prod</spring.profiles.active>
+            </properties>
+        </profile>
+    </profiles>
 
     <build>
+        <!-- 配置所有的yml文件中占位符生效, 假如我们是手动来更新application.yml文件我们可以不配置，手动更新指的是我们在application.yml直接指定profile的值如dev、prod-->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!-- 会生效-->
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

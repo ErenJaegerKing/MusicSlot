@@ -200,7 +200,7 @@
       @pagination="getList"
     />
     <!-- 添加或修改时间段对话框 -->
-    <el-dialog :title="title" :visible.sync="open" width="800px" append-to-body>
+    <el-dialog :title="title" :visible.sync="open" :close-on-click-modal="false" width="800px" append-to-body>
       <el-form ref="form" :model="form" :rules="rules" size="medium" label-width="100px">
         <el-row :gutter="24">
           <el-col :span="24">
@@ -501,7 +501,6 @@ export default {
 
     /** 提交按钮 */
     submitForm() {
-      this.btnLoading = true
       // 创建新数组排序（不影响原数组）
       this.form.weekdays = [...this.form.weekdaysArray].sort().join(',')
       if (this.form.startTime > this.form.endTime) {
@@ -509,6 +508,8 @@ export default {
       } else {
         this.$refs['form'].validate(valid => {
           if (valid) {
+            // 按钮触发要在校验之后
+            this.btnLoading = true
             if (this.form.slotId != null) {
               updateSlot(this.form).then(response => {
                 this.$modal.msgSuccess('修改成功')
