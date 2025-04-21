@@ -24,21 +24,98 @@
         >删除曲目
         </el-button>
       </el-col>
+      <el-button-group class="card-toggle-table" style="float: right; margin-right: 15px">
+        <el-tooltip
+          v-if="cardType"
+          class="item"
+          effect="dark"
+          content="切换成表格"
+          placement="top-start"
+        >
+          <el-button size="small" plain icon="el-icon-s-grid" @click="toggle"/>
+        </el-tooltip>
+        <el-tooltip
+          v-else
+          class="item"
+          effect="dark"
+          content="切换成卡片"
+          placement="top-start"
+        >
+          <el-button size="small" plain icon="el-icon-bank-card" @click="toggle"
+          />
+        </el-tooltip>
+      </el-button-group>
     </el-row>
+    <!--    卡片风格-->
+    <div v-if="cardType" class="music-player-container">
+      <el-row
+        :gutter="20"
+      >
+        <el-col
+          v-for="(item, index) in musicList"
+          :key="item.musicId"
+          :xs="24" :sm="12" :md="8" :lg="6"
+          class="music-card-col"
+        >
+          <el-tooltip
+            placement="right"
+            effect="light"
+            popper-class="music-tooltip"
+            :open-delay="500"
+            :content="tooltipContent(item)"
+          >
+            <el-card
+              class="music-card"
+              shadow="hover"
+              :body-style="{ padding: '0px' }"
+            >
+              <!-- 歌曲封面 -->
+              <div class="cover-container">
+                <img :src="item.imageUrl" class="cover-image">
+                <div class="duration">{{ formatDuration(item.duration) }}</div>
+              </div>
 
-    <el-table v-loading="loading" :data="musicList" @selection-change="handleSelectionChange">
+              <!-- 歌曲信息 -->
+              <div class="music-info">
+                <h4 class="title">{{ item.title }}</h4>
+                <div class="artist">{{ item.artist }}</div>
+                <div class="album">{{ item.album }}</div>
+              </div>
+            </el-card>
+          </el-tooltip>
+        </el-col>
+      </el-row>
+    </div>
+
+    <!--    列表风格-->
+    <el-table
+      v-else
+      v-loading="loading"
+      :data="musicList"
+      @selection-change="handleSelectionChange"
+    >
       <el-table-column type="selection" width="55" align="center"/>
       <el-table-column label="音乐ID" align="center" prop="musicId" width="100px"/>
-      <el-table-column label="歌曲" align="center" prop="title"/>
-      <!--      <el-table-column label="时长(秒)" align="center" prop="duration"/>-->
-      <!--      <el-table-column label="路径" align="center" prop="fileUrl"/>-->
-      <!--      <el-table-column label="状态" align="center" prop="status"/>-->
-      <!--      <el-table-column label="备注" align="center" prop="remark"/>-->
+      <el-table-column label="歌名" align="center" prop="title"/>
+      <el-table-column label="歌手名" align="center" prop="artist"/>
+      <el-table-column label="专辑名" align="center" prop="album"/>
+      <el-table-column label="歌曲时长(秒)" align="center" prop="duration"/>
+      <el-table-column label="歌曲封面" align="center">
+        <template #default="scope">
+          <div>
+            <el-image
+              style="width: 100px; height: 100px"
+              :src="modifiedPath(scope.row.imageUrl)"
+              :fit="'fill'"
+            ></el-image>
+          </div>
+        </template>
+      </el-table-column>
       <el-table-column label="播放" align="center">
         <template #default="scope">
           <!-- 自定义内容：注入音乐播放器 -->
           <div>
-            <audio controls :src="modifiedPath(scope.row.filePath)" style="width: 100%; max-width: 200px;">
+            <audio controls :src="modifiedPath(scope.row.fileUrl)" style="width: 100%; max-width: 200px;">
               您的浏览器不支持音频播放。
             </audio>
           </div>
@@ -67,7 +144,7 @@
     />
 
     <!-- 添加或修改音乐对话框 -->
-    <el-dialog :title="title" :visible.sync="open" append-to-body @close="handleClose">
+    <el-dialog :title="title" :visible.sync="open" :close-on-click-modal="false" append-to-body @close="handleClose">
       <el-upload class="upload-demo"
                  ref="upload"
                  action="#"
@@ -76,10 +153,14 @@
                  :file-list="uploadFileList"
                  :show-file-list="false"
                  :auto-upload="false"
-                 multiple>
-        <el-button slot="trigger" type="primary" plain>选择文件</el-button>
-        <el-button style="margin-left: 5px;" type="success" @click="handler" plain>上传</el-button>
-        <el-button type="danger" @click="clearFileHandler" plain>清空</el-button>
+                 multiple
+      >
+        <el-button slot="trigger" type="primary" plain style="min-width: 100px">选择文件</el-button>
+        <el-button type="success" @click="handler" plain style="margin-left: 5px;min-width: 100px;"
+                   :loading="btnLoading"
+        >上传
+        </el-button>
+        <!--        <el-button type="danger" @click="clearFileHandler" plain>清空</el-button>-->
         <table style="margin-top: 20px">
           <th style="display:inline-block;font-size: 12px;color: #909399;margin-left: 100px">文件名</th>
           <th style="display:inline-block;;font-size: 12px;color: #909399;margin-left: 130px;">文件大小</th>
@@ -116,9 +197,11 @@
                   <el-table-column prop="progress" label="上传进度">
                     <template v-slot="{ row }">
                       <el-progress v-if="!row.status || row.progressStatus === 'normal'"
-                                   :percentage="row.progress"/>
+                                   :percentage="row.progress"
+                      />
                       <el-progress v-else :percentage="row.progress" :status="row.progressStatus"
-                                   :text-inside="true" :stroke-width="16"/>
+                                   :text-inside="true" :stroke-width="16"
+                      />
                     </template>
                   </el-table-column>
                   <el-table-column prop="status" label="状态" width="180">
@@ -134,14 +217,14 @@
 </template>
 
 <script>
-import {listMusic, getMusic, delMusic} from "@/api/music/music";
-import axios from "axios";
-import SparkMD5 from 'spark-md5';
-import {checkUpload, initUpload, mergeUpload} from "@/api/system/upload";
-import {fileSuffixTypeUtil} from "@/utils/FileUtil";
+import { listMusic, getMusic, delMusic, addMusic } from '@/api/music/music'
+import axios from 'axios'
+import SparkMD5 from 'spark-md5'
+import { checkUpload, initUpload, mergeUpload } from '@/api/system/upload'
+import { fileSuffixTypeUtil } from '@/utils/FileUtil'
 
 export default {
-  name: "Music",
+  name: 'Music',
   data() {
     return {
       // 遮罩层
@@ -159,7 +242,7 @@ export default {
       // 音乐表格数据
       musicList: [],
       // 弹出层标题
-      title: "新增音乐",
+      title: '新增音乐',
       // 是否显示弹出层
       open: false,
       // 查询参数
@@ -170,7 +253,7 @@ export default {
         artist: null,
         duration: null,
         filePath: null,
-        status: null,
+        status: null
       },
       // 表单参数
       form: {},
@@ -200,19 +283,75 @@ export default {
       FILE_UPLOAD_ID_KEY: 'file_upload_id',
       // 分片大小
       chunkSize: 30 * 1024 * 1024,
-    };
+      // musicUrlList
+      musicUrlList: [],
+      // 按钮加载
+      btnLoading: false,
+      // 默认为卡片风格，为false时切换成列表风格
+      cardType: true,
+      currentPlaying: null
+    }
   },
   created() {
-    this.getList();
+    this.getList()
   },
   methods: {
+    tooltipContent(item) {
+      return `
+        <div class="tooltip-content">
+          <div class="tooltip-header">
+            <img src="${item.imageUrl}" class="tooltip-cover">
+            <div class="tooltip-header-info">
+              <h3>${item.title}</h3>
+              <div class="artist">${item.artist}</div>
+            </div>
+          </div>
+          <div class="tooltip-details">
+            <div class="detail-item">
+              <span class="detail-label">专辑：</span>
+              <span>${item.album}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">时长：</span>
+              <span>${this.formatDuration(item.duration)}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">发行：</span>
+              <span>${item.releaseDate || '未知'}</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">风格：</span>
+              <span>${item.genre || '流行'}</span>
+            </div>
+          </div>
+          <div class="tooltip-footer">
+            <el-rate
+              :value="${item.rating || 4}"
+              disabled
+              show-score
+              text-color="#ff9900"
+              score-template="{value} 分">
+            </el-rate>
+          </div>
+        </div>
+      `
+    },
+    formatDuration(seconds) {
+      const mins = Math.floor(seconds / 60)
+      const secs = seconds % 60
+      return `${mins}:${secs < 10 ? '0' + secs : secs}`
+    },
+    // 点击切换风格
+    toggle() {
+      this.cardType = !this.cardType
+    },
     /**
      * 移除文件列表
      * @param {*} file
      * @param {*} fileList
      */
     handleRemove(file, fileList) {
-      this.uploadFileList = fileList;
+      this.uploadFileList = fileList
     },
     /**
      * 上传文件列表
@@ -243,13 +382,13 @@ export default {
 
     // 字节大小格式化工具
     formatBytes(size) {
-      if (!size) return '0B';
-      const unitSize = 1024;
-      if (size < unitSize) return size + ' B';
-      if (size < Math.pow(unitSize, 2)) return (size / unitSize).toFixed(2) + ' KB';
-      if (size < Math.pow(unitSize, 3)) return (size / Math.pow(unitSize, 2)).toFixed(2) + ' MB';
-      if (size < Math.pow(unitSize, 4)) return (size / Math.pow(unitSize, 3)).toFixed(2) + ' GB';
-      return (size / Math.pow(unitSize, 4)).toFixed(2) + ' TB';
+      if (!size) return '0B'
+      const unitSize = 1024
+      if (size < unitSize) return size + ' B'
+      if (size < Math.pow(unitSize, 2)) return (size / unitSize).toFixed(2) + ' KB'
+      if (size < Math.pow(unitSize, 3)) return (size / Math.pow(unitSize, 2)).toFixed(2) + ' MB'
+      if (size < Math.pow(unitSize, 4)) return (size / Math.pow(unitSize, 3)).toFixed(2) + ' GB'
+      return (size / Math.pow(unitSize, 4)).toFixed(2) + ' TB'
     },
 
     /**
@@ -263,13 +402,13 @@ export default {
         return
       }
       if (this.currentFileIndex >= this.uploadFileList.length) {
-        this.$message.success("文件上传成功")
-        return;
+        this.$message.success('文件上传成功')
+        return
       }
       //当前操作文件
       // l 2获得当前文件（设置文件状态为获取MD5 | 初始化已上传分片列表）
       const currentFile = this.uploadFileList[this.currentFileIndex]
-      console.log("当前操作文件：", currentFile)
+      console.log('当前操作文件：', currentFile)
       //debugger
       //更新上传标签
       currentFile.status = this.FileStatus.getMd5
@@ -280,12 +419,12 @@ export default {
 
       // 1. 计算文件MD5
       // l 3计算文件的MD5值
-      this.getFileMd5(currentFile.raw, async (md5, totalChunks) => {
-        console.log("md5值", md5)
+      this.getFileMd5(currentFile.raw, async(md5, totalChunks) => {
+        console.log('md5值', md5)
         // 2. 检查是否已上传
         // l 4检查文件是否已上传 [已上传code=1直接跳到下一个文件 部分上传code=2获取已上传分片列表 未上传继续上传流程]
         const checkResult = await self.checkFileUploadedByMd5(md5)
-        console.log("检查是否已上传-->", checkResult)
+        console.log('检查是否已上传-->', checkResult)
         // debugger
         if (checkResult.code1 === 1) {
           //self.$message.success(`上传成功，文件地址：${checkResult.data.url}`)
@@ -293,26 +432,26 @@ export default {
           currentFile.status = this.FileStatus.success
           currentFile.uploadProgress = 100
           //如果此文件上传过，就跳到下一个文件
-          this.currentFileIndex++;
+          this.currentFileIndex++
           this.handler()
           return
         } else if (checkResult.code1 === 2) {  // "上传中" 状态
           // 获取已上传分片列表
-          console.log("上传中：", checkResult)
+          console.log('上传中：', checkResult)
           currentFile.status = this.FileStatus.uploading
           let chunkUploadedList = checkResult.data.chunkUploadedList
-          console.log("chunkUploadedList", chunkUploadedList)
+          console.log('chunkUploadedList', chunkUploadedList)
           currentFile.chunkUploadedList = chunkUploadedList
-          console.log("成功上传的分片信息", chunkUploadedList)
+          console.log('成功上传的分片信息', chunkUploadedList)
         } else {   // 未上传
           console.log('未上传')
         }
         // 3. 正在创建分片
-        currentFile.status = this.FileStatus.chip;
+        currentFile.status = this.FileStatus.chip
 
         //创建分片
         // l 5创建文件分片 将文件分割成指定大小的分片
-        let fileChunks = self.createFileChunk(currentFile.raw, this.chunkSize);
+        let fileChunks = self.createFileChunk(currentFile.raw, this.chunkSize)
 
         //重命名文件
         //let fileName = this.getNewFileName(currentFile)
@@ -340,7 +479,7 @@ export default {
         //debugger
 
         let uploadIdInfo = uploadIdInfoResult.data
-        console.log("获取上传url-->", uploadIdInfo)
+        console.log('获取上传url-->', uploadIdInfo)
 
         let uploadUrls = uploadIdInfo.urlList
         // l 8初始化分片列表（为每个分片创建上传状态对象 | 标记已上传的分片）
@@ -372,7 +511,7 @@ export default {
             })
           }
         })
-        console.log("所有分片信息：", currentFile.chunkList)
+        console.log('所有分片信息：', currentFile.chunkList)
         let tempFileChunks = []
 
         currentFile.chunkList.forEach((item) => {
@@ -385,27 +524,26 @@ export default {
         // 处理分片列表，删除已上传的分片
         // l 9过滤已上传分片
         tempFileChunks = self.processUploadChunkList(tempFileChunks)
-        console.log("删除已上传的分片-->", tempFileChunks)
+        console.log('删除已上传的分片-->', tempFileChunks)
         // 5. 上传
         // l 10上传分片
         await self.uploadChunkBase(tempFileChunks)
 
-
         console.log('---上传完成---')
 
         //判断是否单文件上传或者分片上传
-        if (uploadIdInfo.uploadId === "SingleFileUpload") {
-          console.log("单文件上传");
+        if (uploadIdInfo.uploadId === 'SingleFileUpload') {
+          console.log('单文件上传')
           //更新状态
           currentFile.status = this.FileStatus.success
           //文件下标偏移
-          this.currentFileIndex++;
+          this.currentFileIndex++
           //递归上传下一个文件
           this.handler()
           return
         } else {
           // 6. 合并文件
-          console.log("合并文件-->", currentFile)
+          console.log('合并文件-->', currentFile)
           // l 11合并文件，所有分片上传完成后，请求服务器合并文件
           const mergeResult = await self.mergeFile({
             uploadId: uploadIdInfo.uploadId,
@@ -427,7 +565,7 @@ export default {
             console.log('文件访问地址：' + mergeResult.data)
             // l 12处理下一个文件
             //文件下标偏移
-            this.currentFileIndex++;
+            this.currentFileIndex++
             //递归上传下一个文件
             this.handler()
           }
@@ -454,7 +592,7 @@ export default {
       // l 加载和处理分片
       loadNext()
       // l 文件读取回调
-      fileReader.onload = function (e) {
+      fileReader.onload = function(e) {
         try {
           spark.append(e.target.result)
         } catch (error) {
@@ -467,7 +605,7 @@ export default {
           callback(spark.end(), totalChunks)
         }
       }
-      fileReader.onerror = function () {
+      fileReader.onerror = function() {
         console.warn('读取Md5失败，文件读取错误')
       }
 
@@ -488,7 +626,7 @@ export default {
     checkFileUploadedByMd5(md5) {
       return new Promise((resolve, reject) => {
         checkUpload(md5).then(response => {
-          console.log("md5-->:", response);
+          console.log('md5-->:', response)
           resolve(response)
         }).catch(error => {
           reject(error)
@@ -505,7 +643,7 @@ export default {
       while (count < file.size) {
         fileChunkList.push({
           // l 切割当前分片
-          file: file.slice(count, count + size),
+          file: file.slice(count, count + size)
         })
         count += size
       }
@@ -557,8 +695,10 @@ export default {
           if (chunkList.length) {
 
             const chunkItem = chunkList.shift()
+            // TODO 怎么解决的？真的奇怪
+            const uploadMusicPath = self.modifiedPath(chunkItem.uploadUrl)
             // 直接上传二进制，不需要构造 FormData，否则上传后文件损坏
-            axios.put(chunkItem.uploadUrl, chunkItem.chunk.file, {
+            axios.put(uploadMusicPath, chunkItem.chunk.file, {
               // 上传进度处理
               onUploadProgress: self.checkChunkUploadProgress(chunkItem),
               headers: {
@@ -567,6 +707,11 @@ export default {
             }).then(response => {
               if (response.status === 200) {
                 console.log('分片：' + chunkItem.chunkNumber + ' 上传成功')
+                // 向后端发送请求读取并保存到数据库中
+                let params = {
+                  url: uploadMusicPath
+                }
+                addMusic(params)
                 successCount++
                 // 继续上传下一个分片
                 //  debugger
@@ -600,7 +745,7 @@ export default {
     checkChunkUploadProgress(item) {
       return p => {
         item.progress = parseInt(String((p.loaded / p.total) * 100))
-        console.log("进度：", this.uploadFileList[this.currentFileIndex].uploadProgress)
+        console.log('进度：', this.uploadFileList[this.currentFileIndex].uploadProgress)
         this.updateChunkUploadStatus(item)
       }
     },
@@ -643,12 +788,12 @@ export default {
      *   bucketName: 'bucket'
      */
     mergeFile(fileParam) {
-      const self = this;
+      const self = this
       return new Promise((resolve, reject) => {
         mergeUpload(fileParam).then(response => {
-          console.log(response);
+          console.log(response)
           let data = response
-          console.log("@@@", data)
+          console.log('@@@', data)
           if (!data) {
             data.msg = this.FileStatus.error
             resolve(data)
@@ -667,15 +812,15 @@ export default {
 
     // Minio分片上传 ----------------------------------------------------------
     handleClose() {
-      this.open = false;
-      this.reset();
+      this.open = false
+      this.reset()
       this.getList()
     },
 
     // 取消按钮
     cancel() {
-      this.open = false;
-      this.reset();
+      this.open = false
+      this.reset()
     },
     // 表单重置
     reset() {
@@ -684,29 +829,32 @@ export default {
         title: null,
         artist: null,
         duration: null,
+        imagePath: null,
+        imageUrl: null,
         filePath: null,
         fileUrl: null,
+        fileMd5: null,
         status: null,
         createBy: null,
         createTime: null,
         updateBy: null,
         updateTime: null,
-        remark: null,
-      };
-      this.resetForm("form");
-      this.uploadFileList = [];
-      this.progressFlag = false;
+        remark: null
+      }
+      this.resetForm('form')
+      this.uploadFileList = []
+      this.progressFlag = false
       this.progressPercent = 0
     },
     /** 搜索按钮操作 */
     handleQuery() {
-      this.queryParams.pageNum = 1;
-      this.getList();
+      this.queryParams.pageNum = 1
+      this.getList()
     },
     /** 重置按钮操作 */
     resetQuery() {
-      this.resetForm("queryForm");
-      this.handleQuery();
+      this.resetForm('queryForm')
+      this.handleQuery()
     },
     // 多选框选中数据
     handleSelectionChange(selection) {
@@ -716,35 +864,35 @@ export default {
     },
     /** 新增按钮操作 */
     handleAdd() {
-      this.reset();
-      this.open = true;
-      this.title = "添加音乐";
+      this.reset()
+      this.open = true
+      this.title = '添加音乐'
     },
     /** 修改按钮操作 */
     handleUpdate(row) {
-      this.reset();
+      this.reset()
       const musicId = row.musicId || this.ids
       getMusic(musicId).then(response => {
-        this.form = response.data;
-        this.open = true;
-        this.title = "修改音乐";
-      });
+        this.form = response.data
+        this.open = true
+        this.title = '修改音乐'
+      })
     },
     /** 提交按钮 */
     submitForm() {
       if (!this.fileList || this.fileList.length === 0) {
-        this.$message.warning('请选择要上传的文件');
-        return;
+        this.$message.warning('请选择要上传的文件')
+        return
       }
       // 创建FormData对象
-      let formData = new FormData();
+      let formData = new FormData()
       this.fileList.forEach(file => {
-        formData.append("files", file.raw);
-        formData.append("filesName", file.name);
-      });
+        formData.append('files', file.raw)
+        formData.append('filesName', file.name)
+      })
 
       // 进度条开始
-      this.progressFlag = true;
+      this.progressFlag = true
       axios({
         url: '/music',
         method: 'post',
@@ -753,48 +901,48 @@ export default {
           'Content-Type': 'multipart/form-data'
         },
         onUploadProgress: progressEvent => {
-          this.progressPercent = ((progressEvent.loaded / progressEvent.total) * 100) | 0;
+          this.progressPercent = ((progressEvent.loaded / progressEvent.total) * 100) | 0
         }
       }).then(response => {
-        this.$modal.msgSuccess("添加成功");
-        this.open = false;
-        this.getList();
+        this.$modal.msgSuccess('添加成功')
+        this.open = false
+        this.getList()
       })
     },
     // 文件相对路径
     modifiedPath(originalPath) {
-      const baseUrl = window.location.protocol + "//" + window.location.hostname;
-      const urlObj = new URL(originalPath);
+      const baseUrl = window.location.protocol + '//' + window.location.hostname
+      const urlObj = new URL(originalPath)
       return baseUrl + `:${urlObj.port}${urlObj.pathname}`
     },
     /** 查询音乐列表 */
     getList() {
-      this.loading = true;
+      this.loading = true
       listMusic(this.queryParams).then(response => {
-        this.musicList = response.rows;
-        this.total = response.total;
-        this.loading = false;
-      });
+        this.musicList = response.rows
+        this.total = response.total
+        this.loading = false
+      })
     },
     /** 删除按钮操作 */
     handleDelete(row) {
-      const musicIds = row.musicId || this.ids;
-      this.$modal.confirm('是否确认删除音乐编号为"' + musicIds + '"的数据项？').then(function () {
-        return delMusic(musicIds);
+      const musicIds = row.musicId || this.ids
+      this.$modal.confirm('是否确认删除音乐编号为"' + musicIds + '"的数据项？').then(function() {
+        return delMusic(musicIds)
       }).then(() => {
-        this.getList();
-        this.$modal.msgSuccess("删除成功");
+        this.getList()
+        this.$modal.msgSuccess('删除成功')
       }).catch(() => {
-      });
+      })
     },
     /** 导出按钮操作 */
     handleExport() {
       this.download('system/music/export', {
         ...this.queryParams
       }, `music_${new Date().getTime()}.xlsx`)
-    },
+    }
   }
-};
+}
 </script>
 <style rel="stylesheet/scss" lang="scss">
 .upload-demo {
@@ -861,5 +1009,110 @@ h2 {
   overflow: auto;
   overflow-x: hidden;
   overflow-y: auto;
+}
+
+// 唱片集样式
+
+
+.music-player-container {
+  padding: 20px;
+}
+
+.music-card-col {
+  margin-bottom: 20px;
+}
+
+.music-card {
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.music-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+}
+
+.cover-container {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* 1:1 比例 */
+  overflow: hidden;
+}
+
+.cover-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.music-card:hover .cover-image {
+  transform: scale(1.05);
+}
+
+.play-icon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 24px;
+}
+
+.duration {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: rgba(0, 0, 0, 0.6);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.music-info {
+  padding: 15px;
+}
+
+.title {
+  font-size: 16px;
+  margin: 0 0 5px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artist, .album {
+  font-size: 13px;
+  color: #666;
+  margin: 3px 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.action-buttons .el-button {
+  padding: 0;
+  font-size: 16px;
 }
 </style>

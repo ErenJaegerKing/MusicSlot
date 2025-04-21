@@ -61,8 +61,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="artist != null">artist,</if>
             <if test="album != null">album,</if>
             <if test="duration != null">duration,</if>
-            <if test="imagePath != null and filePath != ''">image_path,</if>
-            <if test="imageUrl != null and fileUrl != ''">image_url,</if>
+            <if test="imagePath != null and imagePath != ''">image_path,</if>
+            <if test="imageUrl != null and imageUrl != ''">image_url,</if>
             <if test="filePath != null and filePath != ''">file_path,</if>
             <if test="fileUrl != null and fileUrl != ''">file_url,</if>
             <if test="fileMd5 != null and fileMd5 != ''">file_md5,</if>
@@ -78,8 +78,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="artist != null">#{artist},</if>
             <if test="album != null">#{album},</if>
             <if test="duration != null">#{duration},</if>
-            <if test="imagePath != null and filePath != ''">${imagePath},</if>
-            <if test="imageUrl != null and fileUrl != ''">${imageUrl},</if>
+            <if test="imagePath != null and imagePath != ''">#{imagePath},</if>
+            <if test="imageUrl != null and imageUrl != ''">#{imageUrl},</if>
             <if test="filePath != null and filePath != ''">#{filePath},</if>
             <if test="fileUrl != null and fileUrl != ''">#{fileUrl},</if>
             <if test="fileMd5 != null and fileMd5 != ''">#{fileMd5},</if>

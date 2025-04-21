@@ -40,10 +40,8 @@ public interface IMusicService {
     /**
      * 新增音乐
      *
-     * @param music 音乐
-     * @return 结果
      */
-    public int insertMusic(Music music);
+    public int insertMusic(String url);
 
     /**
      * 修改音乐

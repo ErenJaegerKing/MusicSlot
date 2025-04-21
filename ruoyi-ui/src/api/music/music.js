@@ -18,14 +18,14 @@ export function getMusic(musicId) {
 }
 
 // 新增音乐
-export function addMusic(data) {
+export function addMusic(param) {
   return request({
     url: '/music',
     method: 'post',
-    data: data,
-    headers: {
-      'Content-Type': 'multipart/form-data'
-    },
+    params: param,
+    // headers: {
+    //   'Content-Type': 'multipart/form-data'
+    // },
   })
 }
 

@@ -5,7 +5,6 @@ import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.core.redis.RedisCache;
 import com.ruoyi.common.enums.RespEnum;
 import com.ruoyi.system.domain.Files;
-import com.ruoyi.system.domain.Music;
 import com.ruoyi.system.domain.vo.FileUploadInfo;
 import com.ruoyi.system.mapper.FilesMapper;
 import com.ruoyi.system.service.IMusicService;
@@ -74,22 +73,6 @@ public class UploadServiceImpl implements UploadService {
             r.put("code1", RespEnum.UPLOADSUCCESSFUL.getCode());
             r.put("msg", RespEnum.UPLOADSUCCESSFUL.getMessage());
             r.put("data", one);
-
-            // 音乐 - 查询是否存在
-            if (one.getFileType().equals("radio")) {
-                Boolean isExist = musicService.findByFileMd5(one.getFileMd5());
-                if (!isExist) {
-                    // 创建音乐
-                    Music music = new Music();
-                    music.setTitle(one.getFileName());
-                    music.setFilePath(one.getUrl());
-                    music.setFileMd5(one.getFileMd5());
-                    // 默认音乐时长为10秒钟
-                    music.setDuration(10L);
-                    musicService.insertMusic(music);
-                }
-            }
-
             return r;
         }
         r.put("code1", RespEnum.NOT_UPLOADED.getCode());
@@ -141,18 +124,6 @@ public class UploadServiceImpl implements UploadService {
         files.setBucketName(fileUploadInfo.getFileType());
         files.setUrl(url);
         filesMapper.insert(files);
-        
-        // 音乐 - 创建音乐
-        if (fileUploadInfo.getFileType().equals("radio")) {
-            // 创建音乐
-            Music music = new Music();
-            music.setTitle(files.getFileName());
-            music.setFilePath(files.getUrl());
-            music.setFileMd5(files.getFileMd5());
-            // 默认音乐时长为10秒钟
-            music.setDuration(10L);
-            musicService.insertMusic(music);
-        }
 
         return files;
     }

@@ -1,19 +1,29 @@
 package com.ruoyi.system.service.impl;
 
+import cn.hutool.core.lang.UUID;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.common.exception.ServiceException;
-import com.ruoyi.common.exception.base.BaseException;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.Music;
 import com.ruoyi.system.domain.TimeSlotMusic;
 import com.ruoyi.system.mapper.MusicMapper;
 import com.ruoyi.system.mapper.TimeSlotMusicMapper;
 import com.ruoyi.system.service.IMusicService;
-import org.checkerframework.checker.units.qual.A;
+import com.ruoyi.system.util.MinioUtil;
+import org.apache.commons.io.FileUtils;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.mp3.MP3File;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.id3.AbstractID3v2Frame;
+import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
+import org.jaudiotagger.tag.id3.framebody.FrameBodyAPIC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
 
@@ -30,6 +40,9 @@ public class MusicServiceImpl implements IMusicService {
 
     @Autowired
     private TimeSlotMusicMapper timeSlotMusicMapper;
+
+    @Autowired
+    private MinioUtil minioUtil;
 
     /**
      * 查询音乐
@@ -66,13 +79,63 @@ public class MusicServiceImpl implements IMusicService {
 
     /**
      * 新增音乐
-     *
-     * @param music 音乐
-     * @return 结果
      */
     @Override
-    public int insertMusic(Music music) {
+    public int insertMusic(String url) {
+        Music music = new Music();
+        music.setFileUrl(url);
+        try {
+            // 下载远程文件到临时文件
+            File tempFile = downloadFileToTemp(url);
+
+            // 使用 JAudiotagger 解析 MP3 文件
+            MP3File mp3File = (MP3File) AudioFileIO.read(tempFile);
+            AbstractID3v2Tag v2tag = mp3File.getID3v2Tag();
+
+            // 歌名
+            music.setTitle(StringUtils.defaultIfBlank(v2tag.getFirst(FieldKey.TITLE), "未知"));
+            // 歌手名
+            music.setArtist(StringUtils.defaultIfBlank(v2tag.getFirst(FieldKey.ARTIST), "未知"));
+            // 专辑名
+            music.setAlbum(StringUtils.defaultIfBlank(v2tag.getFirst(FieldKey.ALBUM), "未知"));
+            // 歌曲时长
+            long length = mp3File.getMP3AudioHeader().getTrackLength();
+            music.setDuration(length > 0 ? length : 0);
+
+            // 歌曲封面
+            AbstractID3v2Frame frame = (AbstractID3v2Frame) v2tag.getFrame("APIC");
+            if (frame != null) {
+                FrameBodyAPIC body = (FrameBodyAPIC) frame.getBody();
+                byte[] imageData = body.getImageData();
+                String fileName = UUID.randomUUID() + ".jpg";
+                // 首次进入如果没有桶的话，会自动创建
+                String imageUrl = MinioUtil.uploadMusicFile("image", fileName, imageData);
+                music.setImageUrl(imageUrl);
+            } else {
+                // 返回一个Minio中默认的图片,手动放一张图片
+                String imageUrl = minioUtil.getFliePath("image", "default.jpg");
+                music.setImageUrl(imageUrl);
+            }
+            // 删除临时文件
+            tempFile.delete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         return musicMapper.insertMusic(music);
+    }
+
+    /**
+     * 将远程文件下载到临时文件
+     *
+     * @param urlString 远程文件的 URL
+     * @return 临时文件对象
+     * @throws IOException 如果下载失败
+     */
+    private static File downloadFileToTemp(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        File tempFile = File.createTempFile("tempMp3", ".mp3");
+        FileUtils.copyURLToFile(url, tempFile);
+        return tempFile;
     }
 
     /**
@@ -100,7 +163,7 @@ public class MusicServiceImpl implements IMusicService {
                         .in(TimeSlotMusic::getMusicId, Arrays.asList(musicIds))
         );
         if (exists) {
-            throw new ServiceException("时间段关联，无法删除",500);
+            throw new ServiceException("时间段关联，无法删除", 500);
         }
         return musicMapper.deleteMusicByMusicIds(musicIds);
     }

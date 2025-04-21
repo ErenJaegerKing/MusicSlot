@@ -21,6 +21,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -37,6 +38,42 @@ import java.util.stream.Collectors;
  */
 @Component
 public class MinioUtil {
+
+    @Value(value = "${minio.endpoint}")
+    private String endpoint;
+
+    @Value(value = "${minio.accessKey}")
+    private String accesskey;
+
+    @Value(value = "${minio.secretKey}")
+    private String secretkey;
+
+    @Value(value = "${minio.expiry}")
+    private Integer expiry;
+
+    // TODO 这里很奇怪 为什么呢
+    private static CustomMinioClient customMinioClient;
+
+    private static Logger log = LoggerFactory.getLogger(MinioUtil.class);
+
+    /**
+     * 用spring的自动注入会注入失败
+     */
+    @PostConstruct
+    public void init() {
+        if (StringUtils.isEmpty(endpoint) ||
+                StringUtils.isEmpty(accesskey) ||
+                StringUtils.isEmpty(secretkey)) {
+            throw new IllegalStateException("MinIO配置不完整");
+        }
+        MinioClient minioClient = MinioClient.builder()
+                .endpoint(endpoint)
+                .credentials(accesskey, secretkey)
+                .build();
+        customMinioClient = new CustomMinioClient(minioClient);
+    }
+
+
     /**
      * 上传文件
      *
@@ -57,37 +94,30 @@ public class MinioUtil {
         }
     }
 
-    @Value(value = "${minio.endpoint}")
-    private String endpoint;
-
-    @Value(value = "${minio.accessKey}")
-    private String accesskey;
-
-    @Value(value = "${minio.secretKey}")
-    private String secretkey;
-
-    @Value(value = "${minio.expiry}")
-    private Integer expiry;
-
-    private CustomMinioClient customMinioClient;
-
-    private static Logger log = LoggerFactory.getLogger(MinioUtil.class);
-
     /**
-     * 用spring的自动注入会注入失败
+     * 上传音乐专用
+     *
+     * @param bucketName 桶名称
+     * @param fileName
+     * @throws IOException
      */
-    @PostConstruct
-    public void init() {
-        if (StringUtils.isEmpty(endpoint) ||
-                StringUtils.isEmpty(accesskey) ||
-                StringUtils.isEmpty(secretkey)) {
-            throw new IllegalStateException("MinIO配置不完整");
+    public static String uploadMusicFile(String bucketName, String fileName, byte[] imageData) throws IOException {
+        String url = "";
+        MinioClient minioClient = SpringUtils.getBean(MinioClient.class);
+        try {
+            //如果桶不存在，就创建桶
+            BucketExistsArgs bucketExistsArgs = BucketExistsArgs.builder().bucket(bucketName).build();
+            if (!customMinioClient.bucketExists(bucketExistsArgs)) {
+                MakeBucketArgs makeBucketArgs = MakeBucketArgs.builder().bucket(bucketName).build();
+                customMinioClient.makeBucket(makeBucketArgs);
+            }
+            minioClient.putObject(PutObjectArgs.builder().bucket(bucketName).object(fileName).stream(new ByteArrayInputStream(imageData),imageData.length, -1).contentType("image/jpeg").build());
+            url = minioClient.getPresignedObjectUrl(GetPresignedObjectUrlArgs.builder().bucket(bucketName).object(fileName).method(Method.GET).build());
+            url = url.substring(0, url.indexOf('?'));
+            return ServletUtils.urlDecode(url);
+        } catch (Exception e) {
+            throw new IOException(e.getMessage(), e);
         }
-        MinioClient minioClient = MinioClient.builder()
-                .endpoint(endpoint)
-                .credentials(accesskey, secretkey)
-                .build();
-        customMinioClient = new CustomMinioClient(minioClient);
     }
 
 
@@ -191,11 +221,7 @@ public class MinioUtil {
                             .build());
             log.info("tip message: 单个文件上传、成功");
             // 上传后端返回的地址的问题
-            log.info("客户端IP{}，本机IP{}", IpUtils.getIpAddr(), IpUtils.getHostIp());
-//            if (!"127.0.0.1".equals(IpUtils.getIpAddr())) {
-//                url = url.replace("http://localhost:9000", "http://" + IpUtils.getHostIp() + ":9000");
-//            }
-//            url = url.replace("http://localhost:9000", "http://" + IpUtils.getHostIp() + ":9000");
+            log.info("单文件上传，客户端IP{}，本机IP{}", IpUtils.getIpAddr(), IpUtils.getHostIp());
             partList.add(url);
             resMap.put("uploadId", "SingleFileUpload");
             resMap.put("urlList", partList);
@@ -257,18 +283,8 @@ public class MinioUtil {
                                 .build());
                 partList.add(uploadUrl);
             }
-            // 上传后端返回的地址的问题
-//            if (!"127.0.0.1".equals(IpUtils.getIpAddr())) {
-//                String hostIp = IpUtils.getHostIp();
-//                partList = partList.stream().map(
-//                        url -> url.replace("http://localhost：", "http://" + hostIp + ":"))
-//                        .collect(Collectors.toList());
-//            }
-//            String hostIp = IpUtils.getHostIp();
-//            partList = partList.stream().map(
-//                            url -> url.replace("http://localhost:9000", "http://" + hostIp + ":9000"))
-//                    .collect(Collectors.toList());
             log.info("tip message: 文件初始化<分片上传>、成功");
+            log.info("初始化分片上传，客户端IP{}，本机IP{}", IpUtils.getIpAddr(), IpUtils.getHostIp());
             resMap.put("urlList", partList);
             return resMap;
         } catch (Exception e) {

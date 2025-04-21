@@ -39,9 +39,6 @@ public interface MusicMapper extends BaseMapper<Music>
     
     /**
      * 新增音乐
-     * 
-     * @param music 音乐
-     * @return 结果
      */
     public int insertMusic(Music music);
 
