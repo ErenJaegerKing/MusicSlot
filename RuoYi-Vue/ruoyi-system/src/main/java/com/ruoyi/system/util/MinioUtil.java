@@ -319,7 +319,7 @@ public class MinioUtil {
 
         } catch (Exception e) {
             log.error("error message: 合并失败、原因:", e);
-            //TODO删除redis的数据
+            // TODO 删除redis的数据 如果发生错误
             return false;
         }
         return true;

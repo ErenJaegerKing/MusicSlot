@@ -4,8 +4,10 @@ import org.apache.commons.io.FileUtils;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.mp3.MP3File;
 import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.id3.AbstractID3v2Frame;
 import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
+import org.jaudiotagger.tag.id3.ID3v22Tag;
 import org.jaudiotagger.tag.id3.framebody.FrameBodyAPIC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +24,7 @@ public class MusicUtil {
     /**
      * 获取MP3歌曲名、歌手、专辑、时长、封面
      * Minio地址专用，将文件下载到本地，然后再进行读取
+     *
      * @param url
      * @return
      */
@@ -31,23 +34,26 @@ public class MusicUtil {
             // 下载远程文件到临时文件
             File tempFile = downloadFileToTemp(url);
 
-            // 使用 JAudiotagger 解析 MP3 文件
+            // MP3文件
             MP3File mp3File = (MP3File) AudioFileIO.read(tempFile);
+            if (mp3File.getID3v2Tag() == null) {
+                System.out.println("是空的");
+                mp3File.setID3v2Tag(new ID3v22Tag());
+            }
             AbstractID3v2Tag v2tag = mp3File.getID3v2Tag();
 
-            // 歌名
-            String songName = v2tag.getFirst(FieldKey.TITLE);
-            // 歌手名
+            String title = v2tag.getFirst(FieldKey.TITLE);
             String artist = v2tag.getFirst(FieldKey.ARTIST);
-            // 专辑名
             String album = v2tag.getFirst(FieldKey.ALBUM);
+            // 歌名
+            if (title == null || title.trim().isEmpty()) title = "未知歌曲";
+            // 歌手名
+            if (artist == null || artist.trim().isEmpty()) artist = "未知歌手";
+            // 专辑名
+            if (album == null || album.trim().isEmpty()) album = "未知专辑";
             // 歌曲时长
-            int length = mp3File.getMP3AudioHeader().getTrackLength();
-
-            System.out.println("歌名: " + songName);
-            System.out.println("歌手名: " + artist);
-            System.out.println("专辑名: " + album);
-            System.out.println("歌曲时长: " + length + " 秒");
+            long length = mp3File.getMP3AudioHeader().getTrackLength();
+            System.out.println(title + artist + album + length);
 
             // 歌曲封面
             AbstractID3v2Frame frame = (AbstractID3v2Frame) v2tag.getFrame("APIC");
@@ -63,7 +69,7 @@ public class MusicUtil {
             }
             // 删除临时文件
             tempFile.delete();
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

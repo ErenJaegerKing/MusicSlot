@@ -34,21 +34,6 @@ public class CustomMinioClient extends MinioClient {
         return response.result().uploadId();
     }
 
-    /**
-     * 合并分片
-     *
-     * @param bucketName       String   桶名称
-     * @param region           String
-     * @param objectName       String   文件名称
-     * @param uploadId         String   上传的 uploadId
-     * @param parts            Part[]   分片集合
-     * @param extraHeaders     Multimap<String, String>
-     * @param extraQueryParams Multimap<String, String>
-     * @return ObjectWriteResponse
-     */
-    public ObjectWriteResponse mergeMultipartUpload(String bucketName, String region, String objectName, String uploadId, Part[] parts, Multimap<String, String> extraHeaders, Multimap<String, String> extraQueryParams) throws Exception {
-        return this.completeMultipartUpload(bucketName, region, objectName, uploadId, parts, extraHeaders, extraQueryParams);
-    }
 
     /**
      * 查询当前上传后的分片信息
@@ -67,6 +52,21 @@ public class CustomMinioClient extends MinioClient {
         return this.listParts(bucketName, region, objectName, maxParts, partNumberMarker, uploadId, extraHeaders, extraQueryParams);
     }
 
+    /**
+     * 合并分片
+     *
+     * @param bucketName       String   桶名称
+     * @param region           String
+     * @param objectName       String   文件名称
+     * @param uploadId         String   上传的 uploadId
+     * @param parts            Part[]   分片集合
+     * @param extraHeaders     Multimap<String, String>
+     * @param extraQueryParams Multimap<String, String>
+     * @return ObjectWriteResponse
+     */
+    public ObjectWriteResponse mergeMultipartUpload(String bucketName, String region, String objectName, String uploadId, Part[] parts, Multimap<String, String> extraHeaders, Multimap<String, String> extraQueryParams) throws Exception {
+        return this.completeMultipartUpload(bucketName, region, objectName, uploadId, parts, extraHeaders, extraQueryParams);
+    }
 
 }
 

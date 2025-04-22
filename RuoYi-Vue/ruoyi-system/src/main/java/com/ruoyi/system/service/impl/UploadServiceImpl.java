@@ -36,9 +36,6 @@ public class UploadServiceImpl implements UploadService {
     @Resource
     private RedisCache redisCache;
 
-    @Autowired
-    private IMusicService musicService;
-
     @Value("${minio.breakpoint-time}")
     private Integer breakpointTime;
 
@@ -93,13 +90,13 @@ public class UploadServiceImpl implements UploadService {
             fileUploadInfo = redisFileUploadInfo;
         }
         log.info("tip message: 通过 <{}> 开始初始化<分片上传>任务", fileUploadInfo);
-        // 获取桶 音乐 radio
+        // 获取桶 保证桶的初始化
         String bucketName = minioUtil.getBucketName(fileUploadInfo.getFileType());
 
         // 单文件上传
         if (fileUploadInfo.getChunkNum() == 1) {
             log.info("tip message: 当前分片数量 <{}> 进行单文件上传", fileUploadInfo.getChunkNum());
-            // 保存到数据库中 | 保存一个音乐
+            // 保存到数据库中
             Files files = saveFileToDB(fileUploadInfo);
             String fileName = files.getUrl().substring(files.getUrl().lastIndexOf("/") + 1);
             return minioUtil.getUploadObjectUrl(fileName, bucketName);
@@ -116,6 +113,7 @@ public class UploadServiceImpl implements UploadService {
     }
 
     private Files saveFileToDB(FileUploadInfo fileUploadInfo) {
+        // 存储在minio中的文件名是md5+后缀
         String suffix = fileUploadInfo.getFileName().substring(fileUploadInfo.getFileName().lastIndexOf("."));
         String url = this.getFliePath(fileUploadInfo.getFileType().toLowerCase(), fileUploadInfo.getFileMd5() + suffix);
         //存入数据库

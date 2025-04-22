@@ -672,7 +672,7 @@ export default {
           if (chunkList.length) {
 
             const chunkItem = chunkList.shift()
-            // TODO 怎么解决的？真的奇怪
+            // TODO 怎么解决的？真的奇怪?
             const uploadMusicPath = self.modifiedPath(chunkItem.uploadUrl)
             // 直接上传二进制，不需要构造 FormData，否则上传后文件损坏
             axios.put(uploadMusicPath, chunkItem.chunk.file, {
@@ -684,7 +684,7 @@ export default {
             }).then(response => {
               if (response.status === 200) {
                 console.log('分片：' + chunkItem.chunkNumber + ' 上传成功')
-                // 向后端发送请求读取并保存到数据库中
+                // 保存音乐
                 let params = {
                   url: uploadMusicPath
                 }
@@ -889,7 +889,9 @@ export default {
     },
     // 文件相对路径
     modifiedPath(originalPath) {
-      const baseUrl = window.location.protocol + '//' + window.location.hostname
+      // 安全检查
+      if (originalPath === null) return
+      const baseUrl = window.location.protocol + "//" + window.location.hostname
       const urlObj = new URL(originalPath)
       return baseUrl + `:${urlObj.port}${urlObj.pathname}`
     },

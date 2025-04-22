@@ -3,7 +3,6 @@ package com.ruoyi.system.service.impl;
 import cn.hutool.core.lang.UUID;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.ruoyi.common.exception.ServiceException;
-import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.system.domain.Music;
 import com.ruoyi.system.domain.TimeSlotMusic;
 import com.ruoyi.system.mapper.MusicMapper;
@@ -16,6 +15,7 @@ import org.jaudiotagger.audio.mp3.MP3File;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.id3.AbstractID3v2Frame;
 import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
+import org.jaudiotagger.tag.id3.ID3v22Tag;
 import org.jaudiotagger.tag.id3.framebody.FrameBodyAPIC;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -90,16 +90,25 @@ public class MusicServiceImpl implements IMusicService {
 
             // 使用 JAudiotagger 解析 MP3 文件
             MP3File mp3File = (MP3File) AudioFileIO.read(tempFile);
+            if(mp3File.getID3v2Tag() == null) {
+                mp3File.setID3v2Tag(new ID3v22Tag());
+            }
             AbstractID3v2Tag v2tag = mp3File.getID3v2Tag();
 
+            String title = v2tag.getFirst(FieldKey.TITLE);
+            String artist = v2tag.getFirst(FieldKey.ARTIST);
+            String album = v2tag.getFirst(FieldKey.ALBUM);
             // 歌名
-            music.setTitle(StringUtils.defaultIfBlank(v2tag.getFirst(FieldKey.TITLE), "未知"));
+            if (title == null || title.trim().isEmpty()) title = "未知歌曲";
             // 歌手名
-            music.setArtist(StringUtils.defaultIfBlank(v2tag.getFirst(FieldKey.ARTIST), "未知"));
+            if (artist == null || artist.trim().isEmpty()) artist = "未知歌手";
             // 专辑名
-            music.setAlbum(StringUtils.defaultIfBlank(v2tag.getFirst(FieldKey.ALBUM), "未知"));
+            if (album == null || album.trim().isEmpty()) album = "未知专辑";
             // 歌曲时长
             long length = mp3File.getMP3AudioHeader().getTrackLength();
+            music.setTitle(title);
+            music.setArtist(artist);
+            music.setAlbum(album);
             music.setDuration(length > 0 ? length : 0);
 
             // 歌曲封面
