@@ -56,70 +56,77 @@
         </el-tooltip>
       </el-button-group>
     </el-row>
-    <!--    卡片风格-->
-    <el-row
-      :gutter="24"
-      v-if="cardType"
-    >
-      <el-col
-        v-for="(item,index) in slotList"
-        :key="item.slotId"
-        :span="6"
-      >
-        <div
-          style="cursor:pointer"
-          @click="handleUpdate(item)"
-        >
-          <el-card
-            class="card-style"
-            shadow="hover"
-            style="border: 1px solid #c0c4cc;"
-          >
-            <div slot="header">
-              <i class="el-icon-set-up"/>
-              <span style="font-size: small; margin-left: 5px">{{ item.slotName }}</span>
-            </div>
-            <div>
-              <div class="card-body-style">
-                <i class="el-icon-time" style="margin-right: 5px; color: orange;"/>
-                <span style="font-weight: 500; color: orange;">{{ item.startTime }}</span>
-                <span style="margin: 0 5px;">至</span>
-                <i class="el-icon-timer" style="margin-right: 5px; color: orange;"/>
-                <span style="font-weight: 500; color: orange;">{{ item.endTime }}</span>
+    <!--卡片风格-->
+    <el-row :gutter="24" v-if="cardType">
+      <el-col v-for="(item,index) in slotList" :key="item.slotId" :span="6" :xs="24" :sm="12" :md="8" :lg="6">
+        <div class="card-container" @click="handleUpdate(item)">
+          <el-card class="modern-card" shadow="hover">
+            <div class="card-header">
+              <h3 class="card-title">{{ item.slotName }}</h3>
+              <div class="card-actions">
+                <i class="el-icon-edit" @click.stop="handleUpdate(item)"/>
               </div>
-              <div class="card-body-style">
+            </div>
+            <!-- 时间部分 -->
+            <div class="time-section">
+              <div class="time-range">
+                <div class="time-item">
+                  <i class="el-icon-time time-icon"/>
+                  <span class="time-label">开始</span>
+                  <span class="time-value">{{ item.startTime }}</span>
+                </div>
+                <div class="time-separator">
+                  <span class="separator-line"></span>
+                  <span class="separator-text">至</span>
+                  <span class="separator-line"></span>
+                </div>
+                <div class="time-item">
+                  <i class="el-icon-timer time-icon"/>
+                  <span class="time-label">结束</span>
+                  <span class="time-value">{{ item.endTime }}</span>
+                </div>
+              </div>
+            </div>
+            <!-- 播放模式部分 -->
+            <div class="info-section">
+              <div class="section-header">
+                <i class="el-icon-video-play"></i>
+                <span>播放模式</span>
+                <span class="play-mode-text">{{ getModeName(item.playMode) }}</span>
+              </div>
+            </div>
+            <!-- 星期部分 -->
+            <div class="info-section">
+              <div class="section-header">
+                <i class="el-icon-date"></i>
+                <span>适用星期</span>
+              </div>
+              <div class="tags-container">
                 <el-tag
                   v-for="mode in item.weekdays.split(',')"
                   :key="mode"
-                  style="margin-right: 5px"
+                  class="weekday-tag"
+                  effect="plain"
+                  size="small"
                 >
                   {{ getWeekdaysName(mode) }}
-                </el-tag>
-              </div>
-              <div class="card-body-style">
-                <el-tag
-                  v-for="mode in item.playMode"
-                  :key="mode"
-                  style="margin-right: 5px"
-                >
-                  {{ getModeName(mode) }}
                 </el-tag>
               </div>
             </div>
           </el-card>
         </div>
       </el-col>
-      <!-- 新增操作的空白卡片 -->
-      <el-col :span="6">
-        <div style="cursor:pointer;" @click="handleAdd">
-          <el-card
-            class="card-style"
-            shadow="hover"
-            style="border: 1px solid #c0c4cc; display: flex; justify-content: center; align-items: center; height: 100%; "
-            @click="handleAdd"
-          >
-            <i class="el-icon-circle-plus-outline" style="color: #409EFF ; font-size: 110px"/>
-          </el-card>
+      <!-- 新增卡片 -->
+      <el-col :span="6" :xs="24" :sm="12" :md="8" :lg="6">
+        <div class="card-container">
+          <div class="add-card" @click="handleAdd">
+            <el-card shadow="hover" class="add-card-inner">
+              <div class="add-card-content">
+                <i class="el-icon-circle-plus-outline add-icon"/>
+                <span class="add-text">添加新时段</span>
+              </div>
+            </el-card>
+          </div>
         </div>
       </el-col>
     </el-row>
@@ -524,7 +531,7 @@ export default {
                 this.open = false
                 this.getList()
               }).finally(_ => {
-                this.btnLoading = false;
+                this.btnLoading = false
               })
             }
           }
@@ -552,16 +559,277 @@ export default {
 }
 </script>
 <style scoped>
-.card-body-style {
-  margin-bottom: 5px;
-  padding: 2px;
-  font-size: 15px;
+.card-container {
+  margin-bottom: 24px;
+  height: 100%;
+  cursor: pointer;
+  .modern-card, .add-card-inner {
+    height: 100%;
+    min-height: 358px; /* 设置统一的最小高度 */
+    display: flex;
+    flex-direction: column;
+  }
 }
 
-.card-style {
-  margin-bottom: 10px;
+.modern-card {
   border-radius: 8px;
-  transition: all 0.3s ease;
-  min-height: 240px;
+  border: 1px solid #dcdfe6; /* 深色边框 */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    border-color: #c0c4cc; /* 悬停时边框颜色加深 */
+  }
+
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid #f0f0f0;
+
+    .card-title {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .card-actions {
+      color: #909399;
+      cursor: pointer;
+      transition: color 0.2s;
+
+      &:hover {
+        color: #409EFF;
+      }
+    }
+  }
+
+  .time-section {
+    padding: 16px 20px;
+    background: #f9fafc;
+    margin: 0 -20px;
+
+    .time-range {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .time-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-icon {
+      color: #409EFF;
+      font-size: 16px;
+    }
+
+    .time-label {
+      font-size: 12px;
+      color: #909399;
+      min-width: 30px;
+    }
+
+    .time-value {
+      font-weight: 500;
+      color: #333;
+    }
+
+    .time-separator {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin: 4px 0;
+
+      .separator-line {
+        flex: 1;
+        height: 1px;
+        background: #e0e0e0;
+      }
+
+      .separator-text {
+        font-size: 12px;
+        color: #909399;
+        padding: 0 8px;
+      }
+    }
+  }
+
+  .info-section {
+    padding: 12px 20px;
+    border-bottom: 1px solid #f5f5f5;
+    flex-grow: 1;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+
+      i {
+        color: #909399;
+        font-size: 14px;
+      }
+
+      span {
+        font-size: 13px;
+        color: #666;
+        font-weight: 500;
+      }
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .weekday-tag {
+      background: #f0f9ff;
+      color: #409EFF;
+      border-color: #d9ecff;
+    }
+
+    .mode-tag {
+      background: #f4f4f5;
+      color: #909399;
+    }
+  }
+}
+
+.info-section {
+  padding: 12px 20px;
+  border-bottom: 1px solid #f5f5f5;
+  flex-grow: 1;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    i {
+      color: #909399;
+      font-size: 14px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      color: #666;
+      font-weight: 500;
+      min-width: 60px;
+    }
+
+    .play-mode-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #409EFF;
+      background: #f0f9ff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-left: auto;
+    }
+  }
+}
+
+.info-section {
+  padding: 12px 20px;
+  border-bottom: 1px solid #f5f5f5;
+  flex-grow: 1;
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    i {
+      color: #909399;
+      font-size: 14px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      color: #666;
+      font-weight: 500;
+      min-width: 60px;
+    }
+
+    .play-mode-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: #409EFF;
+      background: #f0f9ff;
+      padding: 4px 8px;
+      border-radius: 4px;
+      margin-left: auto;
+    }
+  }
+}
+
+.add-card {
+  height: 100%;
+
+  .add-card-inner {
+    border: 1px dashed #dcdfe6; /* 与普通卡片一致的边框颜色 */
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: #409EFF;
+      background: #f5f9ff;
+      border-style: solid; /* 悬停时变为实线 */
+    }
+  }
+
+  .add-card-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+
+    .add-icon {
+      color: #409EFF;
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    .add-text {
+      color: #409EFF;
+      font-size: 14px;
+      font-weight: 500;
+    }
+  }
+}
+
+/* 确保所有卡片列高度一致 */
+.el-col {
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .card-container {
+    margin-bottom: 16px;
+  }
 }
 </style>

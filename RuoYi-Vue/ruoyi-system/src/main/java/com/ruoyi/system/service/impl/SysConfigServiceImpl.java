@@ -6,7 +6,6 @@ import javax.annotation.PostConstruct;
 
 import com.ruoyi.common.constant.TimeSlotConstants;
 import com.ruoyi.system.service.ScheduleExecService;
-import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.common.annotation.DataSource;

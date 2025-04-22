@@ -62,8 +62,24 @@
             effect="light"
             popper-class="music-tooltip"
             :open-delay="500"
-            :content="tooltipContent(item)"
           >
+            <!-- 提示内容模板 -->
+            <div slot="content" class="tooltip-content">
+              <div class="tooltip-header">
+                <img :src="modifiedPath(item.imageUrl)" class="tooltip-cover">
+                <div class="tooltip-meta">
+                  <h4 class="tooltip-title">{{ item.title }}</h4>
+                  <div class="tooltip-artist">{{ item.artist }}</div>
+                  <div class="tooltip-duration">{{ formatDuration(item.duration) }}</div>
+                </div>
+              </div>
+              <div class="tooltip-body">
+                <div class="tooltip-row"><span class="label">专辑：</span>{{ item.album }}</div>
+<!--                <div v-if="item.genre" class="tooltip-row"><span class="label">流派：</span>{{ item.genre }}</div>-->
+<!--                <div v-if="item.year" class="tooltip-row"><span class="label">年份：</span>{{ item.year }}</div>-->
+<!--                <div v-if="item.description" class="tooltip-desc">{{ item.description }}</div>-->
+              </div>
+            </div>
             <el-card
               class="music-card"
               shadow="hover"
@@ -71,7 +87,7 @@
             >
               <!-- 歌曲封面 -->
               <div class="cover-container">
-                <img :src="item.imageUrl" class="cover-image">
+                <img :src="modifiedPath(item.imageUrl)" class="cover-image">
                 <div class="duration">{{ formatDuration(item.duration) }}</div>
               </div>
 
@@ -155,11 +171,8 @@
                  :auto-upload="false"
                  multiple
       >
-        <el-button slot="trigger" type="primary" plain style="min-width: 100px">选择文件</el-button>
-        <el-button type="success" @click="handler" plain style="margin-left: 5px;min-width: 100px;"
-                   :loading="btnLoading"
-        >上传
-        </el-button>
+        <el-button slot="trigger" type="primary" plain style="min-width: 100px" :disabled="btnLoading">选择文件</el-button>
+        <el-button type="success" @click="handler" plain style="margin-left: 5px;min-width: 100px;" :disabled="btnLoading" :loading="btnLoading">上传</el-button>
         <!--        <el-button type="danger" @click="clearFileHandler" plain>清空</el-button>-->
         <table style="margin-top: 20px">
           <th style="display:inline-block;font-size: 12px;color: #909399;margin-left: 100px">文件名</th>
@@ -167,7 +180,7 @@
           <th style="display:inline-block;;font-size: 12px;color: #909399;margin-left: 130px">上传进度</th>
           <th style="display:inline-block;;font-size: 12px;color: #909399;margin-left: 150px">状态</th>
         </table>
-        <!-- 文件列表 -->
+        <!-- 音乐上传组件 -->
         <div class="file-list-wrapper">
           <el-collapse>
             <el-collapse-item v-for="(item, index) in uploadFileList" :key="index">
@@ -296,46 +309,6 @@ export default {
     this.getList()
   },
   methods: {
-    tooltipContent(item) {
-      return `
-        <div class="tooltip-content">
-          <div class="tooltip-header">
-            <img src="${item.imageUrl}" class="tooltip-cover">
-            <div class="tooltip-header-info">
-              <h3>${item.title}</h3>
-              <div class="artist">${item.artist}</div>
-            </div>
-          </div>
-          <div class="tooltip-details">
-            <div class="detail-item">
-              <span class="detail-label">专辑：</span>
-              <span>${item.album}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">时长：</span>
-              <span>${this.formatDuration(item.duration)}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">发行：</span>
-              <span>${item.releaseDate || '未知'}</span>
-            </div>
-            <div class="detail-item">
-              <span class="detail-label">风格：</span>
-              <span>${item.genre || '流行'}</span>
-            </div>
-          </div>
-          <div class="tooltip-footer">
-            <el-rate
-              :value="${item.rating || 4}"
-              disabled
-              show-score
-              text-color="#ff9900"
-              score-template="{value} 分">
-            </el-rate>
-          </div>
-        </div>
-      `
-    },
     formatDuration(seconds) {
       const mins = Math.floor(seconds / 60)
       const secs = seconds % 60
@@ -395,14 +368,18 @@ export default {
      * 开始上传文件
      */
     handler() {
+      this.btnLoading = true;
+
       const self = this
       //判断文件列表是否为空
       if (this.uploadFileList.length === 0) {
         this.$message.error('请先选择文件')
+        this.btnLoading = false;
         return
       }
       if (this.currentFileIndex >= this.uploadFileList.length) {
         this.$message.success('文件上传成功')
+        this.btnLoading = false;
         return
       }
       //当前操作文件
@@ -813,6 +790,7 @@ export default {
     // Minio分片上传 ----------------------------------------------------------
     handleClose() {
       this.open = false
+      this.clearFileHandler()
       this.reset()
       this.getList()
     },
@@ -1114,5 +1092,73 @@ h2 {
 .action-buttons .el-button {
   padding: 0;
   font-size: 16px;
+}
+
+/* Tooltip 样式 */
+.music-tooltip {
+  max-width: 300px !important;
+  padding: 0 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+
+  .tooltip-content {
+    padding: 16px;
+
+    .tooltip-header {
+      display: flex;
+      margin-bottom: 12px;
+
+      .tooltip-cover {
+        width: 80px;
+        height: 80px;
+        border-radius: 4px;
+        object-fit: cover;
+        margin-right: 12px;
+      }
+
+      .tooltip-meta {
+        flex: 1;
+
+        .tooltip-title {
+          margin: 0 0 6px 0;
+          font-size: 16px;
+          color: #333;
+        }
+
+        .tooltip-artist {
+          font-size: 14px;
+          color: #666;
+          margin-bottom: 6px;
+        }
+
+        .tooltip-duration {
+          font-size: 12px;
+          color: #999;
+        }
+      }
+    }
+
+    .tooltip-body {
+      .tooltip-row {
+        font-size: 13px;
+        margin-bottom: 6px;
+        line-height: 1.5;
+
+        .label {
+          color: #909399;
+          font-weight: 500;
+        }
+      }
+
+      .tooltip-desc {
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px dashed #eee;
+        font-size: 12px;
+        color: #666;
+        line-height: 1.6;
+      }
+    }
+  }
 }
 </style>

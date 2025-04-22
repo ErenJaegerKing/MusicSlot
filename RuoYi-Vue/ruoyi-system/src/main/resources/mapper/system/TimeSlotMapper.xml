@@ -71,25 +71,26 @@
         </collection>
     </resultMap>
 
-    <select id="selectTimeSlotList" parameterType="TimeSlot" resultMap="TimeSlotWithMusicResult">
-        SELECT
-            ts.slot_id, ts.slot_name, ts.start_time, ts.end_time,
-            ts.play_mode, ts.weekdays, ts.status, ts.task_id,
-            m.music_id, m.title, m.artist, m.album, m.duration,
-            m.image_path, m.image_url, m.file_path, m.file_url,
-            m.file_md5, m.status AS music_status
-        FROM
-            time_slot ts
-        LEFT JOIN
-            time_slot_music tsm ON ts.slot_id = tsm.slot_id
-        LEFT JOIN
-            music m ON tsm.music_id = m.music_id
+    <select id="selectTimeSlotList" parameterType="TimeSlot" resultMap="TimeSlotResult">
+        <include refid="selectTimeSlotVo"/>
         <where>
             <if test="startTime != null ">and start_time = #{startTime}</if>
             <if test="endTime != null ">and end_time = #{endTime}</if>
             <if test="slotName != null  and slotName != ''">and slot_name like concat('%', #{slotName}, '%')</if>
             <if test="status != null  and status != ''">and status = #{status}</if>
         </where>
+--         SELECT DISTINCT
+--             ts.slot_id, ts.slot_name, ts.start_time, ts.end_time,
+--             ts.play_mode, ts.weekdays, ts.status, ts.task_id,
+--             m.music_id, m.title, m.artist, m.album, m.duration,
+--             m.image_path, m.image_url, m.file_path, m.file_url,
+--             m.file_md5, m.status AS music_status
+--         FROM
+--             time_slot ts
+--         LEFT JOIN
+--             time_slot_music tsm ON ts.slot_id = tsm.slot_id
+--         LEFT JOIN
+--             music m ON tsm.music_id = m.music_id
     </select>
 
     <select id="selectAllTimeSlot" parameterType="TimeSlot" resultMap="TimeSlotResult">
