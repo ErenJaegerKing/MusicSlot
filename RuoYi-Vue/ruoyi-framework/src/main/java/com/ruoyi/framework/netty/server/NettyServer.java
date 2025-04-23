@@ -1,11 +1,11 @@
 package com.ruoyi.framework.netty.server;
 
-import com.ruoyi.framework.netty.domain.MsgInfo;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
@@ -13,8 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.net.InetSocketAddress;
-
-import static com.ruoyi.framework.netty.server.ChannelHandler.channelGroup;
 
 @Component("nettyServer")
 public class NettyServer {
@@ -61,24 +59,32 @@ public class NettyServer {
     }
 
     /**
-     * 向所有连接的客户端广播消息
-     * @param message 要发送的消息内容
-     * @return 发送成功的客户端数量
+     * 向所有连接的客户端发送消息
      */
-    public int broadcast(MsgInfo message) {
-        if (channelGroup.isEmpty()) {
-            logger.warn("没有客户端连接，消息未发送");
-            return 0;
+    public void sendMessageToAllClients(Object message) {
+        if (channel != null) {
+            // 获取所有活跃的客户端channel
+            ChannelGroup channels = ChannelHandler.channelGroup;
+            if (channels != null) {
+                channels.writeAndFlush(message).addListener(future -> {
+                    if (!future.isSuccess()) {
+                        logger.error("消息发送失败", future.cause());
+                    }
+                });
+            }
         }
-        channelGroup.writeAndFlush(message + "\r\n");
-        System.out.println("faasdasdasdasdasd");
-        return channelGroup.size();
     }
 
-    // 向指定客户端发送消息
-    public void sendToClient(Channel channel, MsgInfo message) {
-        if (channel != null && channel.isActive()) {
-            channel.writeAndFlush(message + "\n");
+    /**
+     * 向特定客户端发送消息
+     */
+    public void sendMessageToClient(Channel clientChannel, Object message) {
+        if (clientChannel != null && clientChannel.isActive()) {
+            clientChannel.writeAndFlush(message).addListener(future -> {
+                if (!future.isSuccess()) {
+                    logger.error("消息发送失败", future.cause());
+                }
+            });
         }
     }
 }

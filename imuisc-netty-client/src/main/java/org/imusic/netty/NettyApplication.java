@@ -2,22 +2,25 @@ package org.imusic.netty;
 
 import io.netty.channel.ChannelFuture;
 import org.imusic.netty.client.NettyClient;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.ComponentScan;
 
+import javax.annotation.Resource;
 import java.net.InetSocketAddress;
 
 @SpringBootApplication
+@ComponentScan("org.imusic.netty.client")
 public class NettyApplication implements CommandLineRunner {
 
     @Value("${netty.host}")
     private String host;
     @Value("${netty.port}")
     private int port;
-    @Autowired
+
+    @Resource
     private NettyClient nettyClient;
 
     public static void main(String[] args) {

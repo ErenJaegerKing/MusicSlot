@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.MacSpi;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +43,7 @@ public class ScheduledTasks {
     @Scheduled(fixedRate = 100)
     public void sendPeriodicMessage() {
         MsgInfo msg = MsgUtil.buildMsg("1", "这是java对象");
-        nettyServer.broadcast(msg);
+        nettyServer.sendMessageToAllClients(msg);
     }
 
 //    @Scheduled(cron = "0/30 * * * * ? ")
