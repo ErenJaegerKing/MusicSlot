@@ -84,13 +84,15 @@ public class MusicServiceImpl implements IMusicService {
     public int insertMusic(String url) {
         Music music = new Music();
         music.setFileUrl(url);
+        // 返回一个Minio中默认的图片,手动放一张图片
+        music.setImageUrl(minioUtil.getFliePath("image", "default.jpg"));
         try {
             // 下载远程文件到临时文件
             File tempFile = downloadFileToTemp(url);
 
             // 使用 JAudiotagger 解析 MP3 文件
             MP3File mp3File = (MP3File) AudioFileIO.read(tempFile);
-            if(mp3File.getID3v2Tag() == null) {
+            if (mp3File.getID3v2Tag() == null) {
                 mp3File.setID3v2Tag(new ID3v22Tag());
             }
             AbstractID3v2Tag v2tag = mp3File.getID3v2Tag();
@@ -116,14 +118,12 @@ public class MusicServiceImpl implements IMusicService {
             if (frame != null) {
                 FrameBodyAPIC body = (FrameBodyAPIC) frame.getBody();
                 byte[] imageData = body.getImageData();
-                String fileName = UUID.randomUUID() + ".jpg";
-                // 首次进入如果没有桶的话，会自动创建
-                String imageUrl = MinioUtil.uploadMusicFile("image", fileName, imageData);
-                music.setImageUrl(imageUrl);
-            } else {
-                // 返回一个Minio中默认的图片,手动放一张图片
-                String imageUrl = minioUtil.getFliePath("image", "default.jpg");
-                music.setImageUrl(imageUrl);
+                if (imageData != null && imageData.length > 0) {
+                    String fileName = UUID.randomUUID() + ".jpg";
+                    // 首次进入如果没有桶的话，会自动创建
+                    String imageUrl = MinioUtil.uploadMusicFile("image", fileName, imageData);
+                    music.setImageUrl(imageUrl);
+                }
             }
             // 删除临时文件
             tempFile.delete();

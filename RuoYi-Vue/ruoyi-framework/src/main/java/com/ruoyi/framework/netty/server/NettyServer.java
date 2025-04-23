@@ -1,0 +1,83 @@
+package com.ruoyi.framework.netty.server;
+
+import com.ruoyi.framework.netty.domain.MsgInfo;
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import java.net.InetSocketAddress;
+
+import static com.ruoyi.framework.netty.server.ChannelHandler.channelGroup;
+
+@Component("nettyServer")
+public class NettyServer {
+
+    private Logger logger = LoggerFactory.getLogger(NettyServer.class);
+
+    //配置服务端NIO线程组
+    private final EventLoopGroup parentGroup = new NioEventLoopGroup(); //NioEventLoopGroup extends MultithreadEventLoopGroup Math.max(1, SystemPropertyUtil.getInt("io.netty.eventLoopThreads", NettyRuntime.availableProcessors() * 2));
+    private final EventLoopGroup childGroup = new NioEventLoopGroup();
+    private Channel channel;
+
+    public ChannelFuture bing(InetSocketAddress address) {
+        ChannelFuture channelFuture = null;
+        try {
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(parentGroup, childGroup)
+                    .channel(NioServerSocketChannel.class)    //非阻塞模式
+                    .option(ChannelOption.SO_BACKLOG, 128)
+                    .childHandler(new MyChannelInitializer());
+
+            channelFuture = b.bind(address).syncUninterruptibly();
+            channel = channelFuture.channel();
+        } catch (Exception e) {
+            logger.error(e.getMessage());
+        } finally {
+            if (null != channelFuture && channelFuture.isSuccess()) {
+                logger.info("NettyServer启动成功");
+            } else {
+                logger.error("NettyServer启动失败");
+            }
+        }
+        return channelFuture;
+    }
+
+    public void destroy() {
+        if (null == channel) return;
+        channel.close();
+        parentGroup.shutdownGracefully();
+        childGroup.shutdownGracefully();
+    }
+
+    public Channel getChannel() {
+        return channel;
+    }
+
+    /**
+     * 向所有连接的客户端广播消息
+     * @param message 要发送的消息内容
+     * @return 发送成功的客户端数量
+     */
+    public int broadcast(MsgInfo message) {
+        if (channelGroup.isEmpty()) {
+            logger.warn("没有客户端连接，消息未发送");
+            return 0;
+        }
+        channelGroup.writeAndFlush(message + "\r\n");
+        return channelGroup.size();
+    }
+
+    // 向指定客户端发送消息
+    public void sendToClient(Channel channel, MsgInfo message) {
+        if (channel != null && channel.isActive()) {
+            channel.writeAndFlush(message + "\n");
+        }
+    }
+}

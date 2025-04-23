@@ -1,10 +1,10 @@
 package com.ruoyi.system.util;
 
+import javazoom.jl.player.Player;
 import org.apache.commons.io.FileUtils;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.audio.mp3.MP3File;
 import org.jaudiotagger.tag.FieldKey;
-import org.jaudiotagger.tag.Tag;
 import org.jaudiotagger.tag.id3.AbstractID3v2Frame;
 import org.jaudiotagger.tag.id3.AbstractID3v2Tag;
 import org.jaudiotagger.tag.id3.ID3v22Tag;
@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -87,4 +88,20 @@ public class MusicUtil {
         FileUtils.copyURLToFile(url, tempFile);
         return tempFile;
     }
+
+    /*
+    * 播放音乐
+    * */
+    public static void playMp3Music(String path) {
+        File file = new File(path);
+        try {
+            FileInputStream stream = new FileInputStream(file);
+            Player player = new Player(stream);
+            player.play();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
 }

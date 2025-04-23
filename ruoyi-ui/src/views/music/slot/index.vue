@@ -434,7 +434,15 @@ export default {
     },
     /** 查询音乐列表 */
     getMusicList() {
-      listMusic(this.queryParams).then(response => {
+      const queryParams = {
+        pageNum: 1,
+        pageSize: 1000,
+        startTime: null,
+        endTime: null,
+        slotName: null,
+        status: null
+      }
+      listMusic(queryParams).then(response => {
         this.musicList = response.rows.map(item => ({
           // label: `${item.title} - ${item.artist}`,
           label: `${item.title}`,
@@ -563,6 +571,7 @@ export default {
   margin-bottom: 24px;
   height: 100%;
   cursor: pointer;
+
   .modern-card, .add-card-inner {
     height: 100%;
     min-height: 358px; /* 设置统一的最小高度 */

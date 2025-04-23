@@ -1,48 +1,56 @@
-//package com.ruoyi.web.task;
-//
-//import com.ruoyi.common.enums.PlayMode;
-//import com.ruoyi.system.domain.Music;
-//import com.ruoyi.system.domain.TimeSlot;
-//import com.ruoyi.system.service.IMusicService;
-//import com.ruoyi.system.service.ITimeSlotService;
-//import org.slf4j.Logger;
-//import org.slf4j.LoggerFactory;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.scheduling.annotation.Scheduled;
-//import org.springframework.stereotype.Component;
-//
-//import java.text.SimpleDateFormat;
-//import java.time.Duration;
-//import java.time.LocalDate;
-//import java.time.LocalTime;
-//import java.util.*;
-//import java.util.concurrent.ConcurrentHashMap;
-//import java.util.stream.Collectors;
-//
-//@Component
-//public class ScheduledTasks {
-//    private static final Logger log = LoggerFactory.getLogger(ScheduledTasks.class);
-//
-//    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
-//
-//    // 正在播放的时间段
-//    private final Map<Long, Boolean> playingSlots = new ConcurrentHashMap<>();
-//
-//    // 不循环 歌单播放完毕，但是时间段未结束的 可以在每天凌晨0电的时候，清空这个集合
-//    private final Map<Long, Boolean> notLoopSlots = new ConcurrentHashMap<>();
-//
-//    @Autowired
-//    private ITimeSlotService iTimeSlotService;
-//
-//    @Autowired
-//    private IMusicService iMusicService;
-//
+package com.ruoyi.web.task;
+
+import com.ruoyi.framework.netty.domain.MsgInfo;
+import com.ruoyi.framework.netty.server.NettyServer;
+import com.ruoyi.framework.netty.util.MsgUtil;
+import com.ruoyi.system.domain.Music;
+import com.ruoyi.system.service.IMusicService;
+import com.ruoyi.system.service.ITimeSlotService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+
+@Component
+public class ScheduledTasks {
+    private static final Logger log = LoggerFactory.getLogger(ScheduledTasks.class);
+
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("HH:mm:ss");
+
+    // 正在播放的时间段
+    private final Map<Long, Boolean> playingSlots = new ConcurrentHashMap<>();
+
+    // 不循环 歌单播放完毕，但是时间段未结束的 可以在每天凌晨0电的时候，清空这个集合
+    private final Map<Long, Boolean> notLoopSlots = new ConcurrentHashMap<>();
+
+    @Autowired
+    private ITimeSlotService iTimeSlotService;
+
+    @Autowired
+    private IMusicService iMusicService;
+
+    @Autowired
+    private NettyServer nettyServer;
+
+    // 每5秒向所有客户端发送消息
+    @Scheduled(fixedRate = 100)
+    public void sendPeriodicMessage() {
+        MsgInfo msg = MsgUtil.buildMsg("1", "这是java对象");
+        nettyServer.broadcast(msg);
+    }
+
 //    @Scheduled(cron = "0/30 * * * * ? ")
 //    public void TimeSlotPlayScheduler() {
 //        log.info("新定时任务 - 时间：{}", dateFormat.format(new Date()));
 //        List<TimeSlot> timeSlots = iTimeSlotService.selectAllTimeSlot();
 //
-//        // 遍历时间段 
+//        // 遍历时间段
 //        for (TimeSlot timeSlot : timeSlots) {
 //            // 跳过正在播放的时间段
 //            if (playingSlots.containsKey(timeSlot.getSlotId())) {
@@ -171,22 +179,22 @@
 //            }
 //        }
 //    }
-//
+
 //    @Scheduled(cron = "0 0 0 * * ?")
 //    public void removeNotLoopSlotsScheduler() {
 //        notLoopSlots.clear();
 //    }
-//
-//    private static List<Music> sortMusicListByIds(List<Music> musicList, Long[] musicIds) {
-//        Map<Long, Music> idToMusicMap = musicList.stream()
-//                .collect(Collectors.toMap(Music::getMusicId, m -> m));
-//        List<Music> sortedList = new ArrayList<>(musicIds.length);
-//        for (Long id : musicIds) {
-//            Music m = idToMusicMap.get(id);
-//            sortedList.add(m);
-//        }
-//        return sortedList;
-//    }
-//
-//
-//}
+
+    private static List<Music> sortMusicListByIds(List<Music> musicList, Long[] musicIds) {
+        Map<Long, Music> idToMusicMap = musicList.stream()
+                .collect(Collectors.toMap(Music::getMusicId, m -> m));
+        List<Music> sortedList = new ArrayList<>(musicIds.length);
+        for (Long id : musicIds) {
+            Music m = idToMusicMap.get(id);
+            sortedList.add(m);
+        }
+        return sortedList;
+    }
+
+
+}

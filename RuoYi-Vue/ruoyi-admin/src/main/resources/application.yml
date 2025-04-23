@@ -90,7 +90,7 @@ token:
   # 令牌密钥
   secret: abcdefghijklmnopqrstuvwxyz
   # 令牌有效期（默认30分钟）
-  expireTime: 30
+  expireTime: 1440
 
 # MyBatis配置
 mybatis-plus:
@@ -123,3 +123,6 @@ xss:
   # 匹配链接
   urlPatterns: /system/*,/monitor/*,/tool/*
 
+netty:
+  host: 127.0.0.1
+  port: 7397

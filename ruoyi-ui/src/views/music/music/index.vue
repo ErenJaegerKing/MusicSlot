@@ -49,12 +49,12 @@
     <!--    卡片风格-->
     <div v-if="cardType" class="music-player-container">
       <el-row
-        :gutter="20"
+        :gutter="24"
       >
         <el-col
           v-for="(item, index) in musicList"
           :key="item.musicId"
-          :xs="24" :sm="12" :md="8" :lg="6"
+          :xs="8" :sm="6" :md="4" :lg="4" :xl="2"
           class="music-card-col"
         >
           <el-tooltip
@@ -102,7 +102,6 @@
         </el-col>
       </el-row>
     </div>
-
     <!--    列表风格-->
     <el-table
       v-else
@@ -261,7 +260,7 @@ export default {
       // 查询参数
       queryParams: {
         pageNum: 1,
-        pageSize: 10,
+        pageSize: 30,
         title: null,
         artist: null,
         duration: null,
@@ -1006,7 +1005,8 @@ h2 {
   border-radius: 8px;
   overflow: hidden;
   transition: all 0.3s ease;
-  height: 100%;
+  width: 200px; /* 固定宽度 */
+  height: 300px; /* 固定高度 */
 }
 
 .music-card:hover {
@@ -1015,10 +1015,11 @@ h2 {
 }
 
 .cover-container {
-  position: relative;
-  width: 100%;
   padding-top: 100%; /* 1:1 比例 */
   overflow: hidden;
+  width: 100%;
+  height: 200px; /* 固定高度 */
+  position: relative;
 }
 
 .cover-image {
@@ -1064,6 +1065,8 @@ h2 {
 
 .music-info {
   padding: 15px;
+  height: 100px; /* 固定信息区域高度 */
+  overflow: hidden; /* 防止内容溢出 */
 }
 
 .title {
