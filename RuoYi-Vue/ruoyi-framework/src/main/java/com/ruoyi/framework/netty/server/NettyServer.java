@@ -71,6 +71,7 @@ public class NettyServer {
             return 0;
         }
         channelGroup.writeAndFlush(message + "\r\n");
+        System.out.println("faasdasdasdasdasd");
         return channelGroup.size();
     }
 

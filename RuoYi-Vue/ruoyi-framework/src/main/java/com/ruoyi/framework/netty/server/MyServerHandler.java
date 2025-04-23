@@ -48,7 +48,7 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
         System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " 接收到消息内容：" + JSON.toJSONString(msg));
 
         String str = "服务端收到：" + new Date() + " " + msg + "\r\n";
-        ctx.writeAndFlush(str);
+//        ctx.writeAndFlush(str);
         ChannelHandler.channelGroup.writeAndFlush(str);
     }
 

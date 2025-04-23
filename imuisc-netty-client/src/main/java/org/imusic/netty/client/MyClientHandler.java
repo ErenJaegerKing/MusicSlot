@@ -40,8 +40,7 @@ public class MyClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         logger.info(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " 服务端接收到消息：" + msg);
-        //通知客户端链消息发送成功
-        String str = "服务端收到：" + new Date() + " " + msg + "\r\n";
+        String str = "客户端收到：" + new Date() + " " + msg + "\r\n";
         ctx.writeAndFlush(str);
     }
 
