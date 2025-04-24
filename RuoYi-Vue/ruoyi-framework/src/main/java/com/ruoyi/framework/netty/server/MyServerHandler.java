@@ -2,6 +2,7 @@ package com.ruoyi.framework.netty.server;
 
 import com.alibaba.fastjson2.JSON;
 import com.ruoyi.framework.netty.util.MsgUtil;
+import com.ruoyi.system.domain.TimeSlot;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.SocketChannel;
@@ -22,9 +23,9 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent e = (IdleStateEvent) evt;
             if (e.state() == IdleState.READER_IDLE) {
-                log.info("读空闲：=> Reader Idle");
-                ctx.writeAndFlush(MsgUtil.buildMsg("Request","读取等待：客户端你在吗？"));
-                ctx.close();
+//                ctx.writeAndFlush(MsgUtil.buildMsg("Request","读取等待：客户端你在吗？"));
+                ctx.writeAndFlush(MsgUtil.buildTimeSlotMsg("读超时了，客户端你还在吗？"));
+//                ctx.close();
             } else if (e.state() == IdleState.WRITER_IDLE) {
 //                log.info("写空闲：=> Write Idle");
 //                ctx.writeAndFlush(MsgUtil.buildMsg("Request","写入等待：客户端你在吗？"));
@@ -49,7 +50,7 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
         log.info("服务端：链接报告完毕");
 
         String str = "服务端通知客户端链接建立成功" + " " + new Date() + " " + channel.localAddress().getHostString() + "\r\n";
-        ChannelHandler.channelGroup.writeAndFlush(MsgUtil.buildMsg(channel.id().toString(), str));
+        ChannelHandler.channelGroup.writeAndFlush(MsgUtil.buildTimeSlotMsg(str));
     }
 
     @Override
@@ -60,11 +61,12 @@ public class MyServerHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        log.info(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " 服务端接收到消息：" + msg);
-        System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " 接收到消息类型：" + msg.getClass());
-        System.out.println(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " 接收到消息内容：" + JSON.toJSONString(msg));
-        String str = "服务端接收到客户端消息：" + new Date() + " " + msg + "\r\n";
-        ChannelHandler.channelGroup.writeAndFlush(str);
+        TimeSlot timeSlot = (TimeSlot) msg;
+//        log.info(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " 服务端接收到消息：" + timeSlot);
+//        log.info(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " 接收到消息类型：" + msg.getClass());
+        log.info(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " 接收到消息内容：" + JSON.toJSONString(((TimeSlot) msg).getSlotName()));
+//        String str = "服务端接收到客户端消息：" + new Date() + " " + msg + "\r\n";
+//        ChannelHandler.channelGroup.writeAndFlush(MsgUtil.buildTimeSlotMsg(str));
     }
 
     @Override

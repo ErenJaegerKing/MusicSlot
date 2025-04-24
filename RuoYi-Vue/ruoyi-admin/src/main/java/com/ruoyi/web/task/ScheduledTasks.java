@@ -1,9 +1,8 @@
 package com.ruoyi.web.task;
 
-import com.ruoyi.framework.netty.domain.MsgInfo;
 import com.ruoyi.framework.netty.server.NettyServer;
-import com.ruoyi.framework.netty.util.MsgUtil;
 import com.ruoyi.system.domain.Music;
+import com.ruoyi.system.domain.TimeSlot;
 import com.ruoyi.system.service.IMusicService;
 import com.ruoyi.system.service.ITimeSlotService;
 import org.slf4j.Logger;
@@ -12,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.MacSpi;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,10 +38,12 @@ public class ScheduledTasks {
     private NettyServer nettyServer;
 
     // 每5秒向所有客户端发送消息
-    @Scheduled(fixedRate = 100)
+    @Scheduled(fixedRate = 10000)
     public void sendPeriodicMessage() {
 //        MsgInfo msg = MsgUtil.buildMsg("1", "这是java对象");
 //        nettyServer.sendMessageToAllClients(msg);
+        TimeSlot timeSlot = iTimeSlotService.selectTimeSlotBySlotId(56L);
+        nettyServer.sendMessageToAllClients(timeSlot);
     }
 
 //    @Scheduled(cron = "0/30 * * * * ? ")

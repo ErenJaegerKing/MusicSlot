@@ -1,15 +1,10 @@
-package com.ruoyi.system.domain;
+package org.imusic.netty.domain;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.List;
-
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.fasterxml.jackson.annotation.JsonFormat;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
-import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseEntity;
 
 /**
  * 时间段对象 time_slot
@@ -27,7 +22,6 @@ public class TimeSlot extends BaseEntity {
     public TimeSlot(String slotName) {
         this.slotName = slotName;
     }
-
     /**
      * 时间段ID
      */
@@ -36,39 +30,33 @@ public class TimeSlot extends BaseEntity {
     /**
      * 时间段名称 (任务名称)
      */
-    @Excel(name = "时间段名称")
     private String slotName;
 
     /**
      * 开始时间
      */
     @JsonFormat(pattern = "HH:mm:ss")
-    @Excel(name = "开始时间", width = 30, dateFormat = "HH:mm:ss")
     private LocalTime startTime;
 
     /**
      * 结束时间
      */
     @JsonFormat(pattern = "HH:mm:ss")
-    @Excel(name = "结束时间", width = 30, dateFormat = "HH:mm:ss")
     private LocalTime endTime;
 
     /**
      * 播放模式（1循环 2乱序 可多选）
      */
-    @Excel(name = "播放模式")
     private String playMode;
 
     /**
      * 播放时段（1-7星期一到星期六）
      */
-    @Excel(name = "播放时段")
     private String weekdays;
 
     /**
      * 状态（0正常 1停用）
      */
-    @Excel(name = "状态", readConverterExp = "0=正常,1=停用")
     private String status;
 
     /**
@@ -80,17 +68,13 @@ public class TimeSlot extends BaseEntity {
      * 接收参数
      * 音乐Ids 不持久化
      */
-    @Excel(name = "音乐Ids")
-    @TableField(exist = false)
     private List<Long> musicIds;
 
     /*
     * 查询参数
     * 音乐集合 不持久化
     */
-    @TableField(exist = false)
     private List<Music> musicList;
-
 
     public List<Music> getMusicList() {
         return musicList;
@@ -116,8 +100,6 @@ public class TimeSlot extends BaseEntity {
     public void setTaskId(String taskId) {
         this.taskId = taskId;
     }
-
-
 
     public LocalTime getStartTime() {
         return startTime;
