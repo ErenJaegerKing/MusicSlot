@@ -23,19 +23,20 @@ public class MusicUtilTest {
 //        MusicUtil.getMP3Info("http://localhost:9000/radio/4311373e5dad817ead6732567f864cae.mp3");
 //        MusicUtil.getMP3Info("http://localhost:9000/radio/b2d09eeb3fc8df7c7af29a3ec2abbb77.mp3");
 //        MusicUtil.getMP3Info("http://localhost:9000/radio/24c5000d5633539ccfa70aad16ae77cb.mp3");
-        List<String> paths = Arrays.asList(
-                "C:\\Users\\dell\\Desktop\\090220\\01 - Bad.mp3",
-                "C:\\Users\\dell\\Desktop\\090220\\01 - Bad.mp3",
-                "C:\\Users\\dell\\Desktop\\090220\\01 - Bad.mp3"
-        );
-        LocalTime startTime = LocalTime.of(13,23);
-        LocalTime endTime = LocalTime.of(13,50);
 
-        ScheduledMP3Player player = new ScheduledMP3Player(startTime, endTime);
-
-        player.playMp3Music(paths);
-
-        Runtime.getRuntime().addShutdownHook(new Thread(player::shutdown));
+//        List<String> paths = Arrays.asList(
+//                "C:\\Users\\dell\\Desktop\\090220\\01 - Bad.mp3",
+//                "C:\\Users\\dell\\Desktop\\090220\\01 - Bad.mp3",
+//                "C:\\Users\\dell\\Desktop\\090220\\01 - Bad.mp3"
+//        );
+//        LocalTime startTime = LocalTime.of(13,23);
+//        LocalTime endTime = LocalTime.of(13,50);
+//
+//        ScheduledMP3Player player = new ScheduledMP3Player(startTime, endTime);
+//
+//        player.playMp3Music(paths);
+//
+//        Runtime.getRuntime().addShutdownHook(new Thread(player::shutdown));
 
     }
 

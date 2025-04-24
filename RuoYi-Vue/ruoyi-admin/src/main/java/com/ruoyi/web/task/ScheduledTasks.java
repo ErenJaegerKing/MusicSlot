@@ -1,6 +1,6 @@
 package com.ruoyi.web.task;
 
-import com.ruoyi.framework.netty.server.NettyServer;
+import com.ruoyi.system.netty.server.NettyServer;
 import com.ruoyi.system.domain.Music;
 import com.ruoyi.system.domain.TimeSlot;
 import com.ruoyi.system.service.IMusicService;

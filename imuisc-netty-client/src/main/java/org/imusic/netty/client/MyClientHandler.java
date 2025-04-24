@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -96,39 +95,9 @@ public class MyClientHandler extends ChannelInboundHandlerAdapter {
         logger.info(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()) + " 接收到服务端消息：" + timeSlot);
 //        String str = "客户端收到：" + new Date() + " " + msg + "\r\n";
 //        ctx.writeAndFlush(MsgUtil.buildTimeSlotMsg(str));
+
         if (timeSlot.getSlotId() != null) {
-            logger.info("来了一个定时任务");
-            if (runningSlots.putIfAbsent(String.valueOf(timeSlot.getSlotId()),Boolean.TRUE) != null) {
-                logger.info("slotId {} 的任务已在执行，跳过", timeSlot.getSlotId());
-                return;
-            }
-            logger.info("开始执行定时任务 slotId: {}", timeSlot.getSlotId());
-            ThreadPoolManager.execute(() -> {
-                try {
-                    List<Music> musicList = timeSlot.getMusicList();
-                    List<String> paths = musicList.stream()
-                            .map(Music::getFilePath)
-                            .collect(Collectors.toList());
-                    ScheduledMP3Player player = new ScheduledMP3Player(
-                            timeSlot.getStartTime(),
-                            timeSlot.getEndTime());
-                    List<String> path = Arrays.asList(
-                            "C:\\Users\\dell\\Desktop\\090220\\01 - Bad.mp3"
-                    );
-                    if ("2".equals(timeSlot.getPlayMode())) {
-                        Collections.shuffle(paths);
-                    }
-                    player.playMp3Music(path);
-                    Runtime.getRuntime().addShutdownHook(
-                            new Thread(player::shutdown)
-                    );
-                } catch (Exception e) {
-                    logger.error("执行任务出错", e);
-                } finally {
-                    runningSlots.remove(String.valueOf(timeSlot.getSlotId()));
-                    logger.info("任务 slotId: {} 执行完成", timeSlot.getSlotId());
-                }
-            });
+            handleTimeSlotTask(timeSlot);
         }
     }
 
@@ -136,6 +105,55 @@ public class MyClientHandler extends ChannelInboundHandlerAdapter {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.info("异常信息：\r\n" + cause.getMessage());
         ctx.close();
+    }
+
+    /**
+     * 处理定时任务
+     * @param timeSlot 时间槽信息
+     */
+    private void handleTimeSlotTask(TimeSlot timeSlot) {
+        // 检查是否已有相同 slotId 的任务在执行
+        if (runningSlots.putIfAbsent(String.valueOf(timeSlot.getSlotId()), Boolean.TRUE) != null) {
+            logger.info("slotId {} 的任务已在执行，跳过", timeSlot.getSlotId());
+            return;
+        }
+
+        logger.info("开始执行定时任务 slotId: {}", timeSlot.getSlotId());
+
+        ThreadPoolManager.execute(() -> {
+            try {
+                executeMusicPlayback(timeSlot);
+            } catch (Exception e) {
+                logger.error("执行任务出错", e);
+            } finally {
+                runningSlots.remove(String.valueOf(timeSlot.getSlotId()));
+                logger.info("任务 slotId: {} 执行完成", timeSlot.getSlotId());
+            }
+        });
+    }
+
+
+    /**
+     * 执行音乐播放逻辑
+     * @param timeSlot 时间槽信息
+     */
+    private void executeMusicPlayback(TimeSlot timeSlot) {
+        List<Music> musicList = timeSlot.getMusicList();
+        List<String> paths = musicList.stream()
+                .map(Music::getFileUrl)
+                .collect(Collectors.toList());
+        ScheduledMP3Player player = new ScheduledMP3Player(
+                timeSlot.getStartTime(),
+                timeSlot.getEndTime());
+        // 如果是随机播放模式，打乱播放列表
+        if ("2".equals(timeSlot.getPlayMode())) {
+            Collections.shuffle(paths);
+        }
+        player.playMp3Music(paths,timeSlot.getSlotId(),timeSlot.getSlotName());
+        // 注册 JVM 关闭钩子，确保播放器能正确关闭
+        Runtime.getRuntime().addShutdownHook(
+                new Thread(player::shutdown)
+        );
     }
 
 }

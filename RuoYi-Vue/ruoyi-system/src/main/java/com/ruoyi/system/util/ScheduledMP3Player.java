@@ -2,9 +2,12 @@ package com.ruoyi.system.util;
 
 import javazoom.jl.decoder.JavaLayerException;
 import javazoom.jl.player.Player;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.net.URL;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -95,6 +98,20 @@ public class ScheduledMP3Player {
         } finally {
             currentPlayer = null;
         }
+    }
+
+    /**
+     * 将远程文件下载到临时文件
+     *
+     * @param urlString 远程文件的 URL
+     * @return 临时文件对象
+     * @throws IOException 如果下载失败
+     */
+    private static File downloadFileToTemp(String urlString) throws IOException {
+        URL url = new URL(urlString);
+        File tempFile = File.createTempFile("tempMp3", ".mp3");
+        FileUtils.copyURLToFile(url, tempFile);
+        return tempFile;
     }
 
     /**

@@ -63,23 +63,51 @@
             <artifactId>mp3spi</artifactId>
             <version>1.9.5.4</version>
         </dependency>
+        <!-- io常用工具类 -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.13.0</version>
+        </dependency>
     </dependencies>
 
     <build>
+        <!-- 配置所有的yml文件中占位符生效, 假如我们是手动来更新application.yml文件我们可以不配置，手动更新指的是我们在application.yml直接指定profile的值如dev、prod-->
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <!-- 会生效-->
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>2.5.15</version>
+                <configuration>
+                    <fork>true</fork> <!-- 如果没有该配置，devtools不会生效 -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.1.0</version>
                 <configuration>
-                    <source>8</source>
-                    <target>8</target>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                    <warName>${project.artifactId}</warName>
                 </configuration>
             </plugin>
         </plugins>
+        <finalName>${project.artifactId}</finalName>
     </build>
 
 </project>
