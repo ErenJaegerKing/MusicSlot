@@ -31,6 +31,7 @@ public class NettyServer {
             b.group(parentGroup, childGroup)
                     .channel(NioServerSocketChannel.class)    //非阻塞模式
                     .option(ChannelOption.SO_BACKLOG, 128)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true)
                     .childHandler(new MyChannelInitializer());
 
             channelFuture = b.bind(address).syncUninterruptibly();
@@ -54,7 +55,8 @@ public class NettyServer {
         childGroup.shutdownGracefully();
     }
 
-    public Channel getChannel() {
+    public Channel getChannel()
+    {
         return channel;
     }
 

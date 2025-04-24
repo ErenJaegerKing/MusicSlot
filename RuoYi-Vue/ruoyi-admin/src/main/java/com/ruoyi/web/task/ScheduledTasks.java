@@ -42,8 +42,8 @@ public class ScheduledTasks {
     // 每5秒向所有客户端发送消息
     @Scheduled(fixedRate = 100)
     public void sendPeriodicMessage() {
-        MsgInfo msg = MsgUtil.buildMsg("1", "这是java对象");
-        nettyServer.sendMessageToAllClients(msg);
+//        MsgInfo msg = MsgUtil.buildMsg("1", "这是java对象");
+//        nettyServer.sendMessageToAllClients(msg);
     }
 
 //    @Scheduled(cron = "0/30 * * * * ? ")

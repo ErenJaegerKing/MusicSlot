@@ -3,17 +3,42 @@ package org.imusic.netty.client;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import org.imusic.netty.domain.MsgInfo;
+import org.imusic.netty.util.MsgUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.TimeUnit;
 
 public class MyClientHandler extends ChannelInboundHandlerAdapter {
 
     private Logger logger = LoggerFactory.getLogger(MyClientHandler.class);
+
+    private final NettyClient nettyClient; // 需要注入 NettyClient
+
+    public MyClientHandler(NettyClient nettyClient) {
+        this.nettyClient = nettyClient;
+    }
+
+    private int retryCount = 0;
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            IdleStateEvent event = (IdleStateEvent) evt;
+            if (event.state() == IdleState.WRITER_IDLE) {
+                System.out.println("客户端：发送心跳包");
+                ctx.writeAndFlush(MsgUtil.buildMsg("Request", "ping\n"));
+            }
+        } else {
+            super.userEventTriggered(ctx, evt);
+        }
+    }
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
@@ -23,6 +48,7 @@ public class MyClientHandler extends ChannelInboundHandlerAdapter {
         logger.info("客户端：链接报告IP:{}", channel.remoteAddress().getHostString());
         logger.info("客户端：链接报告Port:{}", channel.remoteAddress().getPort());
         logger.info("客户端：链接报告完毕");
+        retryCount = 0;
         // TODO 不能用吗？
         String str = "客户端通知服务端链接建立成功" + " " + new Date() + " " + channel.localAddress().getHostString() + "\r\n";
         ctx.writeAndFlush(str);
@@ -31,20 +57,26 @@ public class MyClientHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         logger.info("断开链接{}", ctx.channel().localAddress().toString());
-        //使用过程中断线重连
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    InetSocketAddress address = new InetSocketAddress("127.0.0.1", 7397);
-                    new NettyClient().connect(address);
-                    System.out.println("断线重连");
-                    Thread.sleep(500);
-                } catch (Exception e){
-                    System.out.println("断线重连失败，退出重连");
-                }
-            }
-        }).start();
+        InetSocketAddress address = new InetSocketAddress("127.0.0.1", 7397);
+        ctx.channel().eventLoop().schedule(() -> {
+            nettyClient.connect(address);
+        }, 2, TimeUnit.SECONDS);
+
+//        使用过程中断线重连
+//        ctx.channel().eventLoop().schedule(() -> connect(), 5, TimeUnit.SECONDS);
+//        new Thread(new Runnable() {
+//            @Override
+//            public void run() {
+//                try {
+//                    InetSocketAddress address = new InetSocketAddress("127.0.0.1", 7397);
+//                    nettyClient.connect(address);
+//                    System.out.println("断线重连");
+//                    Thread.sleep(10000);
+//                } catch (Exception e){
+//                    System.out.println("断线重连失败，退出重连");
+//                }
+//            }
+//        }).start();
     }
 
     @Override

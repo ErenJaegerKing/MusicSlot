@@ -18,7 +18,7 @@ public class MyChannelInitializer extends ChannelInitializer<SocketChannel> {
          * 3、allIdleTimeSeconds    读写超时时间
          * 4、TimeUnit.SECONDS 秒[默认为秒，可以指定]
          */
-        channel.pipeline().addLast(new IdleStateHandler(2, 2, 2));
+        channel.pipeline().addLast(new IdleStateHandler(8, 0, 0));
         //对象传输处理
         channel.pipeline().addLast(new ObjDecoder(MsgInfo.class));
         channel.pipeline().addLast(new ObjEncoder(MsgInfo.class));
