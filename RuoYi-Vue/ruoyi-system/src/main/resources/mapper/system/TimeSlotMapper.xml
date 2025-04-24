@@ -113,9 +113,20 @@
         where ts.slot_id = #{slotId}
     </select>
 
-    <select id="selectTimeSlotByTaskId" parameterType="String" resultMap="TimeSlotResult">
-        <include refid="selectTimeSlotVo"/>
-        where task_id = #{taskId}
+    <select id="selectTimeSlotByTaskId" parameterType="String" resultMap="TimeSlotWithMusicResult">
+        SELECT
+            ts.slot_id, ts.slot_name, ts.start_time, ts.end_time,
+            ts.play_mode, ts.weekdays, ts.status, ts.task_id,
+            m.music_id, m.title, m.artist, m.album, m.duration,
+            m.image_path, m.image_url, m.file_path, m.file_url,
+            m.file_md5, m.status AS music_status
+        FROM
+            time_slot ts
+                LEFT JOIN
+            time_slot_music tsm ON ts.slot_id = tsm.slot_id
+                LEFT JOIN
+            music m ON tsm.music_id = m.music_id
+        where ts.task_id = #{taskId}
     </select>
     
     <select id="selectTimeSlotBySlotIds" parameterType="Long" resultMap="TimeSlotResult">

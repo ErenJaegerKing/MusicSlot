@@ -60,8 +60,9 @@ public class ScheduledMP3Player {
     /**
      * 播放单个MP3文件
      */
-    private void playSingleFile(String path, Long slotId, String slotName) {
+    private void playSingleFile(String originalUrl, Long slotId, String slotName) {
         File mp3File = null;
+        String path = originalUrl.replace("localhost", "192.168.20.197");
         try {
             mp3File = downloadFileToTemp(path);
         } catch (IOException e) {
@@ -122,7 +123,7 @@ public class ScheduledMP3Player {
      */
     private boolean isWithinTimeWindow() {
         LocalTime now = LocalTime.now();
-        return !now.isBefore(startTime) && !now.isAfter(endTime);
+        return !now.isAfter(endTime);
     }
 
     /**
