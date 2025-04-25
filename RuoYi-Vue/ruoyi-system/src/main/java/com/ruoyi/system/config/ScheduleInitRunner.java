@@ -1,6 +1,7 @@
 package com.ruoyi.system.config;
 
 import com.ruoyi.common.constant.TimeSlotConstants;
+import com.ruoyi.common.core.redis.RedisCache;
 import com.ruoyi.system.domain.ScheduleSettingPO;
 import com.ruoyi.system.mapper.ScheduleSettingMapper;
 import com.ruoyi.system.service.ISysConfigService;
@@ -28,6 +29,9 @@ public class ScheduleInitRunner implements CommandLineRunner {
     private final CronTaskRegistrar scheduledTaskRegistrar;
 
     @Autowired
+    private RedisCache redisCache;
+
+    @Autowired
     private ISysConfigService configService;
 
 
@@ -42,7 +46,8 @@ public class ScheduleInitRunner implements CommandLineRunner {
      */
     @Override
     public void run(String... args) throws Exception {
-        String currentStatus = configService.selectTimeSlotEnabledByKey(TimeSlotConstants.TIMESLOT_QUERY_ENABLED);
+//        String currentStatus = configService.selectTimeSlotEnabledByKey(TimeSlotConstants.TIMESLOT_QUERY_ENABLED);
+        String currentStatus = redisCache.getCacheObject(TimeSlotConstants.TIMESLOT_QUERY_ENABLED);
         if (currentStatus.equals(TimeSlotConstants.ENABLED)) {
             List<ScheduleSettingPO> scheduleSettingList = scheduleSettingMapper.findAll();
             log.info("启动定时任务----");

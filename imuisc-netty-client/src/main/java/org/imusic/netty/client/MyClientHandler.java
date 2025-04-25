@@ -7,12 +7,16 @@ import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import org.imusic.netty.domain.Music;
 import org.imusic.netty.domain.TimeSlot;
+import org.imusic.netty.mamager.AsyncManager;
 import org.imusic.netty.util.MsgUtil;
 import org.imusic.netty.util.ScheduledMP3Player;
-import org.imusic.netty.util.ThreadPoolManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
+import javax.annotation.Resource;
 import java.net.InetSocketAddress;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -120,7 +124,7 @@ public class MyClientHandler extends ChannelInboundHandlerAdapter {
 
         logger.info("开始执行定时任务 slotId: {}", timeSlot.getSlotId());
 
-        ThreadPoolManager.execute(() -> {
+        AsyncManager.me().execute(() -> {
             try {
                 executeMusicPlayback(timeSlot);
             } catch (Exception e) {

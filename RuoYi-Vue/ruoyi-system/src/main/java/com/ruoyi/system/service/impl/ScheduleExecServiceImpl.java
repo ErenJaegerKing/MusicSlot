@@ -49,7 +49,6 @@ public class ScheduleExecServiceImpl implements ScheduleExecService {
 
     @Override
     public void scheduleExec(String taskId) {
-        // TODO 在数据库中为taskId添加索引以优化查询效率
         // 根据taskId查询时间段
         TimeSlot timeSlot = iTimeSlotService.selectTimeSlotByTaskId(taskId);
         nettyServer.sendMessageToAllClients(timeSlot);

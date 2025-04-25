@@ -7,7 +7,6 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import org.imusic.netty.util.ThreadPoolManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -87,7 +86,6 @@ public class NettyClient {
         if (null == channel) return;
         channel.close();
         workGroup.shutdownGracefully();
-        ThreadPoolManager.shutdown();
     }
 
     public Channel getChannel() {

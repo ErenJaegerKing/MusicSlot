@@ -37,14 +37,14 @@ public class ScheduledTasks {
     @Autowired
     private NettyServer nettyServer;
 
-//    // 每5秒向所有客户端发送消息
-//    @Scheduled(fixedRate = 10000)
-//    public void sendPeriodicMessage() {
-////        MsgInfo msg = MsgUtil.buildMsg("1", "这是java对象");
-////        nettyServer.sendMessageToAllClients(msg);
-//        TimeSlot timeSlot = iTimeSlotService.selectTimeSlotBySlotId(56L);
-//        nettyServer.sendMessageToAllClients(timeSlot);
-//    }
+    // 每5秒向所有客户端发送消息
+    @Scheduled(fixedRate = 10000)
+    public void sendPeriodicMessage() {
+//        MsgInfo msg = MsgUtil.buildMsg("1", "这是java对象");
+//        nettyServer.sendMessageToAllClients(msg);
+        TimeSlot timeSlot = iTimeSlotService.selectTimeSlotBySlotId(56L);
+        nettyServer.sendMessageToAllClients(timeSlot);
+    }
 
 //    @Scheduled(cron = "0/30 * * * * ? ")
 //    public void TimeSlotPlayScheduler() {

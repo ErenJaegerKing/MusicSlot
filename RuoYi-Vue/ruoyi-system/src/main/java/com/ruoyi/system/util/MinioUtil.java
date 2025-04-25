@@ -51,7 +51,7 @@ public class MinioUtil {
     @Value(value = "${minio.expiry}")
     private Integer expiry;
 
-    // TODO 这里很奇怪 为什么呢
+    // 声明自定义Minio客户端 通过PostConstruct初始化
     private static CustomMinioClient customMinioClient;
 
     private static Logger log = LoggerFactory.getLogger(MinioUtil.class);
@@ -319,7 +319,7 @@ public class MinioUtil {
 
         } catch (Exception e) {
             log.error("error message: 合并失败、原因:", e);
-            // TODO 删除redis的数据 如果发生错误
+            //删除redis的数据 如果发生错误，也可以等待redis过期
             return false;
         }
         return true;

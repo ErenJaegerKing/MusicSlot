@@ -6,13 +6,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.ComponentScan;
 
 import javax.annotation.Resource;
 import java.net.InetSocketAddress;
 
-@SpringBootApplication
-@ComponentScan("org.imusic.netty.client")
+@SpringBootApplication(scanBasePackages = "org.imusic.netty")
 public class NettyApplication implements CommandLineRunner {
 
     @Value("${netty.host}")

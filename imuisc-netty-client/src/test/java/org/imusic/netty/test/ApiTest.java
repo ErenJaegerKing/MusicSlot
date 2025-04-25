@@ -8,12 +8,23 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.LineBasedFrameDecoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
+import org.imusic.netty.service.TestService;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.nio.charset.Charset;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.concurrent.CountDownLatch;
 
+@SpringBootTest
 public class ApiTest {
+
+    @Test
+    public void TestThreadPool() throws InterruptedException {
+
+    }
 
     public static void main(String[] args) {
         EventLoopGroup workerGroup = new NioEventLoopGroup();
