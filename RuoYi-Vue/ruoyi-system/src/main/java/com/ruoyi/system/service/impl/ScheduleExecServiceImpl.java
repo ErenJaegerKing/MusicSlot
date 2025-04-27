@@ -52,7 +52,6 @@ public class ScheduleExecServiceImpl implements ScheduleExecService {
         // 根据taskId查询时间段
         TimeSlot timeSlot = iTimeSlotService.selectTimeSlotByTaskId(taskId);
         nettyServer.sendMessageToAllClients(timeSlot);
-        // 根据时间段查询相关歌单
 //        Long[] musicIds = null;
 //                Arrays.stream(timeSlot.getMusicIds().split(","))
 //                .map(String::trim)

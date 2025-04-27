@@ -12,6 +12,7 @@ import com.ruoyi.common.utils.spring.SpringUtils;
 import com.ruoyi.system.domain.vo.FileUploadInfo;
 import io.minio.*;
 import io.minio.http.Method;
+import io.minio.messages.Bucket;
 import io.minio.messages.Part;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -324,4 +325,72 @@ public class MinioUtil {
         }
         return true;
     }
+
+    // 判断桶是否存在 创建桶
+    public Boolean isBucketExists(String bucketName) {
+        Boolean isExists = false;
+        try {
+            isExists = customMinioClient.bucketExists(BucketExistsArgs.builder().bucket(bucketName).build());
+            if (!isExists) {
+                customMinioClient.makeBucket(MakeBucketArgs.builder().bucket(bucketName).build());
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return isExists;
+    }
+
+    // 上传文件
+    public void uploadObject(String bucketName,String path) {
+        try {
+            customMinioClient.uploadObject(UploadObjectArgs.builder().bucket(bucketName).filename(path).build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 获取所有桶
+    public void getAllBuckets() {
+        try {
+            List<Bucket> buckets = customMinioClient.listBuckets();
+            buckets.forEach(bucket -> {
+                System.out.println(bucket.creationDate().toLocalDateTime() + "," + bucket.name());
+            });
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 删除桶
+    public void removeBucket(String bucketName) {
+        try {
+            customMinioClient.removeBucket(RemoveBucketArgs.builder().bucket(bucketName).build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 下载文件
+    public void downloadObject(String bucketName,String object,String path) {
+        try {
+            customMinioClient.downloadObject(DownloadObjectArgs.builder()
+                    .bucket(bucketName)
+                    .object(object) // Saved Pictures/001420yp398.jpg
+                    .filename(path)
+                    .build());
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 删除对象
+    public void removeObject(String bucketName,String object) {
+        try {
+            customMinioClient.removeObject(RemoveObjectArgs.builder().bucket(bucketName).object(object).build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
