@@ -43,7 +43,9 @@ public class ScheduledTasks {
 //        MsgInfo msg = MsgUtil.buildMsg("1", "这是java对象");
 //        nettyServer.sendMessageToAllClients(msg);
         TimeSlot timeSlot = iTimeSlotService.selectTimeSlotBySlotId(56L);
-        nettyServer.sendMessageToAllClients(timeSlot);
+        if (timeSlot != null) {
+            nettyServer.sendMessageToAllClients(timeSlot);
+        }
     }
 
 //    @Scheduled(cron = "0/30 * * * * ? ")

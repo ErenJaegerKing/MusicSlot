@@ -23,8 +23,6 @@ import com.ruoyi.common.core.page.TableDataInfo;
 
 /**
  * 时间段Controller
- * 
- * @author ruoyi
  * @date 2025-04-08
  */
 @RestController

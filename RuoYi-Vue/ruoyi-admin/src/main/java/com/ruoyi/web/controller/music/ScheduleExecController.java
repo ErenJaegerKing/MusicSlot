@@ -1,5 +1,6 @@
 package com.ruoyi.web.controller.music;
 
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.system.domain.dto.ScheduleSettingDTO;
 import com.ruoyi.system.service.ScheduleExecService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -7,9 +8,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/**
- * @author tx
- */
 @RestController
 @RequestMapping("/timer")
 public class ScheduleExecController {
@@ -18,6 +16,7 @@ public class ScheduleExecController {
     private ScheduleExecService scheduleExecService;
     
     @RequestMapping("/add")
+    @Anonymous
     public void add(@RequestBody ScheduleSettingDTO scheduleSettingDTO){
         scheduleExecService.add(scheduleSettingDTO);
     }

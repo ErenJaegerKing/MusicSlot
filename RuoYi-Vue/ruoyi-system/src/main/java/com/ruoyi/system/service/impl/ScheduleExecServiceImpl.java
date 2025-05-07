@@ -41,9 +41,6 @@ public class ScheduleExecServiceImpl implements ScheduleExecService {
     @Autowired
     private ITimeSlotService iTimeSlotService;
 
-    @Autowired
-    private IMusicService iMusicService;
-
     @Resource
     private NettyServer nettyServer;
 
